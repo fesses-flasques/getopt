@@ -6,10 +6,11 @@ Options getter for c++ programs
 How to use:
 
 	Getopt	obj(argc, argv, "abc:def*g");
-				^
-				fmt string.
+						^
+						fmt string.
 	
-	The fmt string tells Getopt which options are setable and which
+The fmt string tells Getopt which options are setable and which
+
 options take one or several argument. As the example above, the fmt string
 tells that the program can receive "-a" , "-b" , and "-c something".
 ':' stands for one argument.

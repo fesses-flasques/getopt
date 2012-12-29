@@ -32,6 +32,8 @@ char		*Getopt::
 getLastArg(char c) const {
   std::map<char, std::list<char *> >::const_iterator	it;
 
+  if (!c)
+    return (_rem.back());
   if ((it = this->_args.find(c)) == this->_args.end())
     return (NULL);
   return (it->second.back());
@@ -41,6 +43,8 @@ const std::list<char *>		*Getopt::
 getArgs(char c) const {
   std::map<char, std::list<char *> >::const_iterator	it;
 
+  if (!c)
+    return (&_rem);
   if ((it = this->_args.find(c)) == this->_args.end())
     return (NULL);
   return (&it->second);
@@ -151,6 +155,14 @@ dump() const {
   }
   if (_ign.size())
     std::cout << "Ignored:\t" << "-" << _ign << std::endl;
+  if ((args = getArgs(0))->size()) {
+    std::cout << "Remain\t:";
+    int i = 0;
+    for (it = args->begin(); it != args->end(); ++it,++i)
+      std::cout << (i ? "\t" : "") << "\t["
+	<< i << "]: "
+	<< *it << std::endl;
+  }
 }
 
 void		Getopt::
@@ -192,6 +204,10 @@ _build_opts() {
       if (HAS_ARGS(_hasarg))
 	_setarg(ret);
     }
+  }
+  while (_ind < (_argc)) {
+    _rem.push_back(_argv[_ind]);
+    ++_ind;
   }
 }
 

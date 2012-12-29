@@ -37,6 +37,7 @@ class			Getopt
   int			_low;
   int			_up;
   std::map<char, std::list<char *> >	_args;
+  std::list<char *>	_rem;
 
   // Operations functions
   Getopt();
