@@ -28,7 +28,7 @@ class			Getopt
   // Data indexes
   int			_ind;
   unsigned int		_opt;
-  unsigned int		_swp;
+  int			_swp;
   char			*_optarg;
   char			_hasarg;
 

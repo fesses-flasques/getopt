@@ -89,6 +89,7 @@ _gn_opt() {
     // Long options
     if (_argv[_ind][0] == OPT_CHAR && _argv[_ind][1] == OPT_CHAR) {
       std::cout << "long opt:\t" << _argv[_ind] << std::endl;
+      std::cout << "Long options aren't considered yet." << std::endl;
       ++_ind;
       return (0);
     }
