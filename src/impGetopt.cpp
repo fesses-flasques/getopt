@@ -154,6 +154,7 @@ _setopt(char c) {
 
 int		Getopt::
 _nb_args(size_t pos) const {
+  (void)pos;
   // Define a format string and parse it! :D
   return (9);
 }
