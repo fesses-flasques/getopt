@@ -56,7 +56,9 @@ EXAMPLE_NAME	=	example
 EXAMPLE_SRC	=	example_main.cpp
 
 $(NAME):	$(OBJ)
-	$(CXX) -o $(NAME) $(OBJ) $(LDFLAGS)
+	@$(CXX) -o $(NAME) $(OBJ) $(LDFLAGS) && $(ECHO) "$(OK_STRING)" || \
+	  ( $(ECHO) "$(ERROR_STRING)" && test 1 -eq 2 )
+	@echo -e - Created binary $(COL_NAME)$(NAME)$(COL_ORG)
 
 %.o:		%.cpp
 	@$(CXX) -c $< $(CXXFLAGS) -o $@ && $(ECHO) "$(OK_STRING)" || \

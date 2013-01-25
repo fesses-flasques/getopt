@@ -19,6 +19,11 @@ TABOPT(char c) const { return (1 << (c - SRCCASE(c))); }
 inline int	Getopt::
 MAPOPT(int x, char c) const { return (x & TABOPT(c)); }
 
+inline bool	Getopt::
+_still_args() const {
+  return (_ind < (_argc - _swp));
+}
+
 bool		Getopt::
 isSet(char c) const {
   if (ISLOWER(c))                                                              
@@ -73,6 +78,32 @@ _getswap() {
   ++this->_swp;
 }
 
+bool	Getopt::
+_get_mc_option() {
+  int		i = 0, args_ndx;
+  std::string	cmp(_argv[_ind]);
+
+  if (_mc_opt == NULL)
+    return (false);
+  while (_mc_opt[i]) {
+    args_ndx = 0;
+    if (cmp == _mc_opt[i] + args_ndx) {
+      return (true);
+    }
+  }
+  return (false);
+}
+
+bool	Getopt::
+_get_l_option() {
+  if (_argv[_ind][0] == OPT_CHAR && _argv[_ind][1] == OPT_CHAR) {
+    std::cout << "long opt:\t" << _argv[_ind] << std::endl;
+    ++_ind;
+    return (true);
+  }
+  return (false);
+}
+
 char		Getopt::
 _gn_opt() {
   char		ret;
@@ -80,18 +111,18 @@ _gn_opt() {
 
   _optarg = NULL;
   if (!_opt) {
-    while (_ind < (_argc - _swp) && _argv[_ind][0] != OPT_CHAR)
+    while (_still_args() && _argv[_ind][0] != OPT_CHAR)
       this->_getswap();
 
     if (_ind >= (_argc - _swp))
       return (0);
 
-    // Long options
-    if (_argv[_ind][0] == OPT_CHAR && _argv[_ind][1] == OPT_CHAR) {
-      std::cout << "long opt:\t" << _argv[_ind] << std::endl;
-      ++_ind;
+    // Multi-characters options
+    if (this->_get_mc_option())
       return (0);
-    }
+    // Long options
+    if (this->_get_l_option())
+      return (0);
   }
   if (!(ret = _argv[_ind][++_opt])) {
     ++_ind;
@@ -103,18 +134,105 @@ _gn_opt() {
     _ign += ret;
     return (0);
   }
-  if (HAS_ARGS((_hasarg = _fmt[pos + 1]))) {
+  _setopt(ret);
+  return (_resolve_arg(pos, ret));
+}
+
+void		Getopt::
+_setopt(char c) {
+  if (ISLOWER(c))
+  {
+    if (!MAPOPT(_low, c))
+      _low += MAPOPT(0xFFFFFFFF, c);
+  }
+  else if (ISUPPER(c))
+  {
+    if (!MAPOPT(_up, c))
+      _up += MAPOPT(0xFFFFFFFF, c);
+  }
+}
+
+int		Getopt::
+_nb_args(size_t pos) const {
+  // Define a format string and parse it! :D
+  return (9);
+}
+
+void		Getopt::
+_setarg(char hasarg, char c, int nb) {
+  (void)nb;
+  if (hasarg == SINGLE_HANDLE_CHAR && _optarg && nb == 1)
+    _args[c].push_back(_optarg);
+  else if ((hasarg == MULT_HANDLE_CHAR || nb > 1) && _optarg) {
+    _args[c].push_back(_optarg);
+    while (_still_args() && _argv[_ind] &&
+	((_argv[_ind][0] != '-' && hasarg == MULT_HANDLE_CHAR) || (--nb > 0))) {
+      std::cout << nb << std::endl;
+      _args[c].push_back(_argv[_ind]);
+      ++_ind;
+    }
+    return ;
+  }
+}
+
+bool		Getopt::
+_resolve_arg(size_t pos, char c) {
+  char		hasarg;
+
+  if (HAS_ARGS((hasarg = _fmt[pos + 1]))) {
     if (!_argv[_ind][_opt + 1]) {
-      if (_ind + 1 >= (_argc - _swp))
-	return (ret);
-      _optarg = _argv[++_ind];
+      if (++_ind >= (_argc - _swp))
+	return (false);
+      _optarg = _argv[_ind];
     }
     else
       _optarg = _argv[_ind] + _opt + 1;
     ++_ind;
     _opt = 0;
+    this->_setarg(hasarg, c, _nb_args(pos));
+    return (true);
   }
-  return (ret);
+  return (false);
+}
+
+void		Getopt::
+_build_opts() {
+  this->_reinit_vars();
+  while (_still_args())
+    _gn_opt();
+  while (_ind < (_argc)) {
+    _rem.push_back(_argv[_ind]);
+    ++_ind;
+  }
+}
+
+Getopt::
+Getopt(int argc, char **argv, std::string &fmt, char **l_opt, char **mc_opt)
+  : _argc(argc), _argv(argv), _fmt(fmt), _l_opt(l_opt), _mc_opt(mc_opt) {
+    this->_build_opts();
+  }
+
+Getopt::
+Getopt(int argc, char **argv, const char *fmt, char **l_opt, char **mc_opt)
+  : _argc(argc), _argv(argv), _fmt(std::string(fmt)), _l_opt(l_opt), _mc_opt(mc_opt) {
+    this->_build_opts();
+  }
+
+Getopt::
+~Getopt() {
+}
+
+Getopt::
+Getopt(const Getopt &oth) {
+  (void)oth;
+  std::cout << "Hello World ! (copy reference)" << std::endl;
+}
+
+Getopt		&Getopt::
+operator=(const Getopt &oth) {
+  (void)oth;
+  std::cout << "Hello World ! (Operator =)" << std::endl;
+  return (*this);
 }
 
 void	Getopt::
@@ -163,79 +281,4 @@ dump() const {
 	<< i << "]: "
 	<< *it << std::endl;
   }
-}
-
-void		Getopt::
-_setopt(char c) {
-  if (ISLOWER(c))
-  {
-    if (!MAPOPT(_low, c))
-      _low += MAPOPT(0xFFFFFFFF, c);
-  }
-  else if (ISUPPER(c))
-  {
-    if (!MAPOPT(_up, c))
-      _up += MAPOPT(0xFFFFFFFF, c);
-  }
-}
-
-void		Getopt::
-_setarg(char c) {
-  if (_hasarg == SINGLE_HANDLE_CHAR && _optarg)
-    _args[c].push_back(_optarg);
-  else if (_hasarg == MULT_HANDLE_CHAR && _optarg) {
-    _args[c].push_back(_optarg);
-    while (_ind < (_argc - _swp) && _argv[_ind] && _argv[_ind][0] != '-') {
-      _args[c].push_back(_argv[_ind]);
-      ++_ind;
-    }
-  }
-}
-
-void		Getopt::
-_build_opts() {
-  char		ret;
-
-  this->_reinit_vars();
-  while (_ind < (_argc - _swp)) {
-    ret = _gn_opt();
-    if (ret) {
-      _setopt(ret);
-      if (HAS_ARGS(_hasarg))
-	_setarg(ret);
-    }
-  }
-  while (_ind < (_argc)) {
-    _rem.push_back(_argv[_ind]);
-    ++_ind;
-  }
-}
-
-Getopt::
-Getopt(int argc, char **argv, std::string &fmt, char **l_opt)
-  : _argc(argc), _argv(argv), _fmt(fmt), _l_opt(l_opt) {
-    this->_build_opts();
-  }
-
-Getopt::
-Getopt(int argc, char **argv, const char *fmt, char **l_opt)
-  : _argc(argc), _argv(argv), _fmt(std::string(fmt)), _l_opt(l_opt) {
-    this->_build_opts();
-  }
-
-Getopt::
-~Getopt() {
-}
-
-Getopt::
-Getopt(const Getopt &oth) {
-  (void)oth;
-  std::cout << "Hello World ! (copy reference)" << std::endl;
-}
-
-Getopt		&Getopt::
-operator=(const Getopt &oth) {
-  (void)oth;
-  std::cout << "Hello World ! (Operator =)" << std::endl;
-  return (*this);
 }
