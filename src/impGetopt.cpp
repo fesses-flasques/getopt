@@ -1,6 +1,29 @@
 #include	<cstdio>
 #include	"getopt.hh"
 
+void		Getopt::
+_thrower(
+    char token,
+    const char *err,
+    const char *which,
+    const char *fmt,
+    unsigned i)
+  const throw() {
+  // OUAIS J'AI PAS PU FAIRE PLUS CRADE! :D
+  std::string	error(err);
+
+  error += " [";
+  error += token;
+  error += "] in {";
+  error += which;
+  error += "} --\n";
+  error += fmt;
+  error += '\n';
+  error.append(i, '~');
+  error += '^';
+  throw Getopt::syntaxError(error);
+}
+
 inline bool	Getopt::
 HAS_ARGS(char c) const { return (c == SINGLE_HANDLE_CHAR || c == MULT_HANDLE_CHAR); }
 
@@ -9,6 +32,9 @@ ISLOWER(char c) const { return (c >= 'a' && c <= 'z'); }
 
 inline bool	Getopt::
 ISUPPER(char c) const { return (c >= 'A' && c <= 'Z'); }
+
+inline bool	Getopt::
+ISOPT(char c) const { return (ISLOWER(c) || ISUPPER(c)); }
 
 inline int	Getopt::
 SRCCASE(char c) const { return (ISLOWER(c) ? 'a' : 'A'); }
@@ -24,6 +50,11 @@ _still_args() const {
   return (_ind < (_argc - _swp));
 }
 
+inline bool	Getopt::
+_no_more_args() const {
+  return (!_still_args());
+}
+
 bool		Getopt::
 isSet(char c) const {
   if (ISLOWER(c))                                                              
@@ -33,26 +64,99 @@ isSet(char c) const {
   return (false);
 }
 
+char		**Getopt::
+getRemain() const {
+  return (this->_argv + _ind);
+}
+
 char		*Getopt::
 getLastArg(char c) const {
-  std::map<char, std::list<char *> >::const_iterator	it;
+  std::map<char, data>::const_iterator	it;
 
   if (!c)
     return (_rem.back());
   if ((it = this->_args.find(c)) == this->_args.end())
     return (NULL);
-  return (it->second.back());
+  return (it->second.args->back());
 }
 
 const std::list<char *>		*Getopt::
 getArgs(char c) const {
-  std::map<char, std::list<char *> >::const_iterator	it;
+  std::map<char, data>::const_iterator	it;
 
   if (!c)
     return (&_rem);
   if ((it = this->_args.find(c)) == this->_args.end())
     return (NULL);
-  return (&it->second);
+  return ((it->second.args && it->second.args->empty())
+      ? NULL
+      : it->second.args);
+}
+
+unsigned int	Getopt::
+_bracket_token(unsigned int i) {
+  return (i);
+}
+
+//"a:bc*d:<2>"
+bool		Getopt::
+_ptoken_caller(unsigned int (Getopt::*ptr)(unsigned int), unsigned int &i) {
+  unsigned int	s;
+
+  if ((s = (this->*ptr)(i)) == i)
+    return (false);
+  i = s;
+  return (true);
+}
+
+void		Getopt::
+_parse_hasarg(char treat, unsigned int &i) {
+  unsigned int	ndx = 0;
+  unsigned int (Getopt::* const tok[])(unsigned int) = {
+    &Getopt::_bracket_token
+  };
+  if (ISOPT(_fmt[++i])) {
+    this->_args[treat].nb = 1;
+    return ;
+  }
+  while (ndx < (sizeof(tok) / sizeof(*tok))) {
+    if (_ptoken_caller(tok[ndx], i) == true)
+      return ;
+    ++ndx;
+  }
+  _thrower(_fmt[i], "Unexpected token", "_fmt", _fmt.c_str(), i);
+  return ;
+}
+
+void		Getopt::
+_init_fmt() {
+  unsigned int	i = 0;
+  std::map<char, data>::const_iterator	it;
+  char		treat;
+
+  this->_args.clear();
+  while (i < _fmt.length()) {
+    treat = _fmt[i];
+    if (!ISOPT(treat)) { // Check if it can be an option
+      _thrower(treat, "Expected opt. Invalid token", "_fmt", _fmt.c_str(), i);
+    }
+
+    if ((it = this->_args.find(treat)) != this->_args.end()) {
+      _thrower(treat, "Multiple definition of token", "_fmt", _fmt.c_str(), i);
+    }
+    if (HAS_ARGS(_fmt[++i])) {
+      this->_args[treat].args = NULL;//new std::list<char *>;
+      _parse_hasarg(treat, i);
+    }
+  }
+}
+
+void		Getopt::
+_init_l_opt() {
+}
+
+void		Getopt::
+_init_mc_opt() {
 }
 
 void		Getopt::
@@ -63,6 +167,10 @@ _reinit_vars() {
   this->_low = 0;
   this->_up = 0;
   this->_ign.clear();
+  this->_rem.clear();
+  this->_init_fmt();
+  this->_init_l_opt();
+  this->_init_mc_opt();
 }
 
 void		Getopt::
@@ -90,6 +198,8 @@ _get_mc_option() {
     if (cmp == _mc_opt[i] + args_ndx) {
       return (true);
     }
+    ++args_ndx;
+    ++i;
   }
   return (false);
 }
@@ -113,15 +223,11 @@ _gn_opt() {
   if (!_opt) {
     while (_still_args() && _argv[_ind][0] != OPT_CHAR)
       this->_getswap();
-
-    if (_ind >= (_argc - _swp))
+    if (_no_more_args())
       return (0);
-
-    // Multi-characters options
-    if (this->_get_mc_option())
-      return (0);
-    // Long options
-    if (this->_get_l_option())
+    /*if (this->_get_mc_option()) // Multi-characters options
+      return (0);*/
+    if (this->_get_l_option()) // Long options
       return (0);
   }
   if (!(ret = _argv[_ind][++_opt])) {
@@ -131,7 +237,8 @@ _gn_opt() {
   }
 
   if ((pos = _fmt.find_first_of(ret)) == std::string::npos) {
-    _ign += ret;
+    if (_ign.find_first_of(ret) == std::string::npos)
+      _ign += ret;
     return (0);
   }
   _setopt(ret);
@@ -153,26 +260,27 @@ _setopt(char c) {
 }
 
 int		Getopt::
-_nb_args(size_t pos) const {
-  (void)pos;
-  // Define a format string and parse it! :D
-  return (9);
+_nb_args(char c) const {
+  std::map<char, data>::const_iterator	it;
+
+  if ((it = this->_args.find(c)) == this->_args.end())
+    return (0);
+  return (it->second.nb);
 }
 
 void		Getopt::
 _setarg(char hasarg, char c, int nb) {
-  (void)nb;
+  if (!(this->_args[c].args))
+    this->_args[c].args = new std::list<char *>;
   if (hasarg == SINGLE_HANDLE_CHAR && _optarg && nb == 1)
-    _args[c].push_back(_optarg);
+    _args[c].args->push_back(_optarg);
   else if ((hasarg == MULT_HANDLE_CHAR || nb > 1) && _optarg) {
-    _args[c].push_back(_optarg);
+    _args[c].args->push_back(_optarg);
     while (_still_args() && _argv[_ind] &&
 	((_argv[_ind][0] != '-' && hasarg == MULT_HANDLE_CHAR) || (--nb > 0))) {
-      std::cout << nb << std::endl;
-      _args[c].push_back(_argv[_ind]);
+      _args[c].args->push_back(_argv[_ind]);
       ++_ind;
     }
-    return ;
   }
 }
 
@@ -182,7 +290,8 @@ _resolve_arg(size_t pos, char c) {
 
   if (HAS_ARGS((hasarg = _fmt[pos + 1]))) {
     if (!_argv[_ind][_opt + 1]) {
-      if (++_ind >= (_argc - _swp))
+      ++_ind;
+      if (_no_more_args())
 	return (false);
       _optarg = _argv[_ind];
     }
@@ -190,7 +299,7 @@ _resolve_arg(size_t pos, char c) {
       _optarg = _argv[_ind] + _opt + 1;
     ++_ind;
     _opt = 0;
-    this->_setarg(hasarg, c, _nb_args(pos));
+    this->_setarg(hasarg, c, _nb_args(c));
     return (true);
   }
   return (false);
@@ -201,20 +310,25 @@ _build_opts() {
   this->_reinit_vars();
   while (_still_args())
     _gn_opt();
-  while (_ind < (_argc)) {
-    _rem.push_back(_argv[_ind]);
-    ++_ind;
+#if	0
+  { // Only if you need to get a std::list of remain args
+    int	remain = _ind;
+    while (remain < (_argc)) {
+      _rem.push_back(_argv[_ind]);
+      ++remain;
+    }
   }
+#endif
 }
 
 Getopt::
-Getopt(int argc, char **argv, std::string &fmt, char **l_opt, char **mc_opt)
+Getopt(int argc, char **argv, std::string &fmt, const char **l_opt, const char **mc_opt)
   : _argc(argc), _argv(argv), _fmt(fmt), _l_opt(l_opt), _mc_opt(mc_opt) {
     this->_build_opts();
   }
 
 Getopt::
-Getopt(int argc, char **argv, const char *fmt, char **l_opt, char **mc_opt)
+Getopt(int argc, char **argv, const char *fmt, const char **l_opt, const char **mc_opt)
   : _argc(argc), _argv(argv), _fmt(std::string(fmt)), _l_opt(l_opt), _mc_opt(mc_opt) {
     this->_build_opts();
   }
