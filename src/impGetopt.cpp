@@ -115,8 +115,9 @@ _parse_hasarg(char treat, unsigned int &i) {
   unsigned int (Getopt::* const tok[])(unsigned int) = {
     &Getopt::_bracket_token
   };
-  if (ISOPT(_fmt[++i])) {
-    this->_args[treat].nb = 1;
+  this->_args[treat].nb = 1;
+  ++i;
+  if (!_fmt[i] || ISOPT(_fmt[i])) {
     return ;
   }
   while (ndx < (sizeof(tok) / sizeof(*tok))) {
@@ -269,15 +270,15 @@ _nb_args(char c) const {
 }
 
 void		Getopt::
-_setarg(char hasarg, char c, int nb) {
+_setarg(char c, int nb) {
   if (!(this->_args[c].args))
     this->_args[c].args = new std::list<char *>;
-  if (hasarg == SINGLE_HANDLE_CHAR && _optarg && nb == 1)
+  if (_optarg && nb == 1)
     _args[c].args->push_back(_optarg);
-  else if ((hasarg == MULT_HANDLE_CHAR || nb > 1) && _optarg) {
+  else if ((nb == NB_MULT_HANDLE_CHAR || nb > 1) && _optarg) {
     _args[c].args->push_back(_optarg);
     while (_still_args() && _argv[_ind] &&
-	((_argv[_ind][0] != '-' && hasarg == MULT_HANDLE_CHAR) || (--nb > 0))) {
+	((_argv[_ind][0] != '-' && nb == NB_MULT_HANDLE_CHAR) || (--nb > 0))) {
       _args[c].args->push_back(_argv[_ind]);
       ++_ind;
     }
@@ -286,9 +287,10 @@ _setarg(char hasarg, char c, int nb) {
 
 bool		Getopt::
 _resolve_arg(size_t pos, char c) {
-  char		hasarg;
+  int           nb_args;
+  std::map<char, data>::const_iterator	it;
 
-  if (HAS_ARGS((hasarg = _fmt[pos + 1]))) {
+  if ((nb_args = _nb_args(c)) >= 1) {
     if (!_argv[_ind][_opt + 1]) {
       ++_ind;
       if (_no_more_args())
@@ -299,7 +301,7 @@ _resolve_arg(size_t pos, char c) {
       _optarg = _argv[_ind] + _opt + 1;
     ++_ind;
     _opt = 0;
-    this->_setarg(hasarg, c, _nb_args(c));
+    this->_setarg(c, nb_args);
     return (true);
   }
   return (false);

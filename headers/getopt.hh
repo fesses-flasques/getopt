@@ -6,12 +6,14 @@
 # include	<list>
 # include	<exception>
 
-static const char	OPT_CHAR = '-';
-static const char	SINGLE_HANDLE_CHAR = ':';
-static const char	MULT_HANDLE_CHAR = '*';
-
 class			Getopt
 {
+  static const char	OPT_CHAR = '-';
+  static const char	SINGLE_HANDLE_CHAR = ':';
+  static const char	MULT_HANDLE_CHAR = '*';
+
+  static const int      NB_MULT_HANDLE_CHAR = -1;
+
   // Exceptions
   class			syntaxError : public std::exception {
     std::string		_str;
@@ -82,7 +84,7 @@ class			Getopt
   void			_getswap();
   char			_gn_opt();
   bool			_resolve_arg(size_t, char);
-  void			_setarg(char, char, int nb = 1);
+  void			_setarg(char, int nb = 1);
   int			_nb_args(char) const;
   void			_setopt(char);
   bool			_get_l_option();
