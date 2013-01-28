@@ -7,7 +7,7 @@
 # include	<exception>
 # include	<sstream>
 
-# define		REMAIN_IN_LIST
+# undef		REMAIN_IN_LIST
 
 template	<typename C>
 static C	charstrait_extract(const char *t) {
