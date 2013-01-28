@@ -5,6 +5,17 @@
 # include	<map>
 # include	<list>
 # include	<exception>
+# include	<sstream>
+
+# define		REMAIN_IN_LIST
+
+template	<typename C>
+static C	charstrait_extract(const char *t) {
+  C		val;
+  std::istringstream	iss(std::string(t), std::istringstream::in);
+  iss >> val;
+  return (val);
+}
 
 class			Getopt
 {
@@ -15,7 +26,8 @@ class			Getopt
   static const int      NB_MULT_HANDLE_CHAR = -1;
 
   // Exceptions
-  class			syntaxError : public std::exception {
+  class			syntaxError : public std::exception
+  {
     std::string		_str;
 
     public:
@@ -25,16 +37,18 @@ class			Getopt
       return (this->_str.c_str());
     }
   };
+
   void			_thrower(
       char,
       const char *,
       const char *,
       const char *,
-      unsigned)
-    const throw();
+      unsigned
+      ) const throw();
   // manipulating functions
   inline bool		ISLOWER(char) const;
   inline bool		ISUPPER(char) const;
+  inline bool		ISDIGIT(char) const;
   inline bool		ISOPT(char) const;
   inline int		SRCCASE(char) const;
   inline int		TABOPT(char) const;
@@ -63,16 +77,26 @@ class			Getopt
   int			_up;
   struct		data {
     int			nb;
-    std::list<char *>	*args;//DELETE
+    std::list<char *>	*args;
   };
   std::map<char, data>	_args;
   std::list<char *>	_rem;
 
   // Parse functions
-  bool			_ptoken_caller(unsigned (Getopt::*)(unsigned int),
-      unsigned int &);
-  unsigned		_bracket_token(unsigned int);
-  void			_parse_hasarg(char, unsigned int &);
+
+  // -> Differents token taker
+  unsigned		_bracket_token(std::string &, unsigned int, char);
+
+  // -> Mechanisms for tokens
+  bool			_ptoken_caller(
+      unsigned (Getopt::*)(std::string &, unsigned int, char),
+      std::string &,
+      unsigned int &,
+      char
+      );
+  void			_parse_hasarg(std::string &, unsigned int &, char);
+
+  // -> different options types caller
   void			_init_fmt();
   void			_init_l_opt();
   void			_init_mc_opt();
@@ -83,7 +107,7 @@ class			Getopt
   void			_reinit_vars();
   void			_getswap();
   char			_gn_opt();
-  bool			_resolve_arg(size_t, char);
+  bool			_resolve_arg(char);
   void			_setarg(char, int nb = 1);
   int			_nb_args(char) const;
   void			_setopt(char);
@@ -91,10 +115,20 @@ class			Getopt
   bool			_get_mc_option();
 
   public:
-  Getopt(int, char **, std::string &,
-      const char **l_opt = NULL, const char **mc_opt = NULL);
-  Getopt(int, char **, const char *,
-      const char **l_opt = NULL, const char **mc_opt = NULL);
+  Getopt(
+      int,
+      char **,
+      std::string &,
+      const char **l_opt = NULL,
+      const char **mc_opt = NULL
+      );
+  Getopt(
+      int,
+      char **,
+      const char *,
+      const char **l_opt = NULL,
+      const char **mc_opt = NULL
+      );
   Getopt(const Getopt &);
   ~Getopt();
   Getopt			&operator=(const Getopt &);

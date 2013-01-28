@@ -7,9 +7,8 @@ _thrower(
     const char *err,
     const char *which,
     const char *fmt,
-    unsigned i)
-  const throw() {
-  // OUAIS J'AI PAS PU FAIRE PLUS CRADE! :D
+    unsigned i
+    ) const throw() {
   std::string	error(err);
 
   error += " [";
@@ -21,11 +20,16 @@ _thrower(
   error += '\n';
   error.append(i, '~');
   error += '^';
-  throw Getopt::syntaxError(error);
+  // OUAIS J'AI PAS PU FAIRE PLUS CRADE! :D
+  syntaxError *t = new syntaxError(error);
+  throw *t;
 }
 
 inline bool	Getopt::
 HAS_ARGS(char c) const { return (c == SINGLE_HANDLE_CHAR || c == MULT_HANDLE_CHAR); }
+
+inline bool	Getopt::
+ISDIGIT(char c) const { return (c >= '0' && c <= '9'); }
 
 inline bool	Getopt::
 ISLOWER(char c) const { return (c >= 'a' && c <= 'z'); }
@@ -90,29 +94,42 @@ getArgs(char c) const {
     return (NULL);
   return ((it->second.args && it->second.args->empty())
       ? NULL
-      : it->second.args);
+      : it->second.args
+      );
 }
 
 unsigned int	Getopt::
-_bracket_token(unsigned int i) {
-  return (i);
+_bracket_token(std::string &fmt, unsigned int i, char treat) {
+  if (fmt[i] != '<')
+    return (i);
+  if (ISDIGIT(fmt[++i])) {// Simple number
+    _args[treat].nb = charstrait_extract<int>(fmt.c_str() + i); 
+    while (ISDIGIT(fmt[++i]));
+  }
+  if (fmt[i] != '>')
+    this->_thrower(fmt[i], "Expected '>' token", "UNDEFINED", _fmt.c_str(), i);
+  return (i + 1);
 }
 
-//"a:bc*d:<2>"
 bool		Getopt::
-_ptoken_caller(unsigned int (Getopt::*ptr)(unsigned int), unsigned int &i) {
+_ptoken_caller(
+    unsigned int (Getopt::*ptr)(std::string &, unsigned int, char),
+    std::string &fmt,
+    unsigned int &i,
+    char treat
+    ) {
   unsigned int	s;
 
-  if ((s = (this->*ptr)(i)) == i)
+  if ((s = (this->*ptr)(fmt, i, treat)) == i)
     return (false);
   i = s;
   return (true);
 }
 
 void		Getopt::
-_parse_hasarg(char treat, unsigned int &i) {
+_parse_hasarg(std::string &fmt, unsigned int &i, char treat) {
   unsigned int	ndx = 0;
-  unsigned int (Getopt::* const tok[])(unsigned int) = {
+  unsigned int (Getopt::* const tok[])(std::string &, unsigned int, char) = {
     &Getopt::_bracket_token
   };
   this->_args[treat].nb = 1;
@@ -121,12 +138,11 @@ _parse_hasarg(char treat, unsigned int &i) {
     return ;
   }
   while (ndx < (sizeof(tok) / sizeof(*tok))) {
-    if (_ptoken_caller(tok[ndx], i) == true)
+    if (_ptoken_caller(tok[ndx], fmt, i, treat) == true)
       return ;
     ++ndx;
   }
   _thrower(_fmt[i], "Unexpected token", "_fmt", _fmt.c_str(), i);
-  return ;
 }
 
 void		Getopt::
@@ -147,7 +163,12 @@ _init_fmt() {
     }
     if (HAS_ARGS(_fmt[++i])) {
       this->_args[treat].args = NULL;//new std::list<char *>;
-      _parse_hasarg(treat, i);
+      if (_fmt[i] == MULT_HANDLE_CHAR) {
+	this->_args[treat].nb = NB_MULT_HANDLE_CHAR;
+	++i;
+      }
+      else
+	_parse_hasarg(_fmt, i, treat);
     }
   }
 }
@@ -243,7 +264,7 @@ _gn_opt() {
     return (0);
   }
   _setopt(ret);
-  return (_resolve_arg(pos, ret));
+  return (_resolve_arg(ret));
 }
 
 void		Getopt::
@@ -276,6 +297,9 @@ _setarg(char c, int nb) {
   if (_optarg && nb == 1)
     _args[c].args->push_back(_optarg);
   else if ((nb == NB_MULT_HANDLE_CHAR || nb > 1) && _optarg) {
+    if ((nb == NB_MULT_HANDLE_CHAR) && (_optarg[0] == '-')) {
+      return ;
+    }
     _args[c].args->push_back(_optarg);
     while (_still_args() && _argv[_ind] &&
 	((_argv[_ind][0] != '-' && nb == NB_MULT_HANDLE_CHAR) || (--nb > 0))) {
@@ -286,11 +310,12 @@ _setarg(char c, int nb) {
 }
 
 bool		Getopt::
-_resolve_arg(size_t pos, char c) {
+_resolve_arg(char c) {
   int           nb_args;
   std::map<char, data>::const_iterator	it;
 
-  if ((nb_args = _nb_args(c)) >= 1) {
+  nb_args = _nb_args(c);
+  if ((nb_args >= 1) || nb_args == NB_MULT_HANDLE_CHAR) {
     if (!_argv[_ind][_opt + 1]) {
       ++_ind;
       if (_no_more_args())
@@ -312,7 +337,7 @@ _build_opts() {
   this->_reinit_vars();
   while (_still_args())
     _gn_opt();
-#if	0
+#ifdef	REMAIN_IN_LIST
   { // Only if you need to get a std::list of remain args
     int	remain = _ind;
     while (remain < (_argc)) {
@@ -337,6 +362,12 @@ Getopt(int argc, char **argv, const char *fmt, const char **l_opt, const char **
 
 Getopt::
 ~Getopt() {
+  std::map<char, data>::iterator	it;
+  for (it = _args.begin(); it != _args.end(); ++it) {
+    if (it->second.args)
+      delete it->second.args;
+  }
+
 }
 
 Getopt::
@@ -390,12 +421,27 @@ dump() const {
   }
   if (_ign.size())
     std::cout << "Ignored:\t" << "-" << _ign << std::endl;
-  if ((args = getArgs(0))->size()) {
+  /* Just for correct indenting
+#ifdef REMAIN_IN_LIST
+if ((args = getArgs(0))->size()) {
+std::cout << "Remain\t:";
+int i = 0;
+for (it = args->begin(); it != args->end(); ++it,++i)
+std::cout << (i ? "\t" : "") << "\t["
+<< i << "]: "
+<< *it << std::endl;
+#else
+*/
+  char **rem;
+  if ((rem = getRemain()) && rem[0]) {
     std::cout << "Remain\t:";
-    int i = 0;
-    for (it = args->begin(); it != args->end(); ++it,++i)
+    int	i = 0;
+    while (i < _argc - _ind) {
       std::cout << (i ? "\t" : "") << "\t["
 	<< i << "]: "
-	<< *it << std::endl;
+	<< rem[i] << std::endl;
+      ++i;
+    }
+    //#endif
   }
 }

@@ -19,13 +19,15 @@ main(int argc, char **argv) {
     "false",
     NULL
   };
+  Getopt	*opt;
+  std::string	l("lol");
   try {
-    Getopt	opt(argc, argv, "a:bc*d:<3>e", l_opt, mc_opt);
-    opt.dump();
-  } catch (std::exception &e) {
+    opt = new Getopt(argc, argv, "a:bc*d:<3>e", l_opt, mc_opt);
+  } catch (...) {
     std::cout << "NU T'ES LA" << std::endl;
-    std::cout << e.what() << std::endl;
   }
+  opt->dump();
+  delete opt;
 
   return (EXIT_SUCCESS);
 }
