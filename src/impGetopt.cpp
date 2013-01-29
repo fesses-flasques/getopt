@@ -269,13 +269,11 @@ _gn_opt() {
 
 void		Getopt::
 _setopt(char c) {
-  if (ISLOWER(c))
-  {
+  if (ISLOWER(c)) {
     if (!MAPOPT(_low, c))
       _low += MAPOPT(0xFFFFFFFF, c);
   }
-  else if (ISUPPER(c))
-  {
+  else if (ISUPPER(c)) {
     if (!MAPOPT(_up, c))
       _up += MAPOPT(0xFFFFFFFF, c);
   }

@@ -81,5 +81,5 @@ fclean:		clean
 re:		fclean all
 
 example: re
-	g++ $(EXAMPLE_SRC) -Iheaders/ -L. -lgetopt -o $(EXAMPLE_NAME)
+	$(CXX) $(EXAMPLE_SRC) -Iheaders/ -L. -lgetopt -o $(EXAMPLE_NAME)
 .PHONY:		all clean fclean re
