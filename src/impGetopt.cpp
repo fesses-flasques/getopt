@@ -247,10 +247,14 @@ _gn_opt() {
       this->_getswap();
     if (_no_more_args())
       return (0);
-    /*if (this->_get_mc_option()) // Multi-characters options
-      return (0);*/
+#if 0
+    if (this->_get_mc_option()) // Multi-characters options
+      return (0);
+#endif
+#if 0
     if (this->_get_l_option()) // Long options
       return (0);
+#endif
   }
   if (!(ret = _argv[_ind][++_opt])) {
     ++_ind;
