@@ -2,6 +2,14 @@ getopt
 ======
 
 Options getter for c++ programs
+___________________________
+THIS PROJECT ISN'T FINISHED:
+
+Still has to be done:
+- long-options
+- multi-character options and its "push-order" system.
+
+___________________________
 
 How to use:
 
