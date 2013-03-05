@@ -213,11 +213,14 @@ _get_mc_option() {
   int		i = 0, args_ndx;
   std::string	cmp(_argv[_ind]);
 
+  
+    std::cout << "STD: " << cmp.erase(0, 1) << std::endl;
   if (_mc_opt == NULL)
     return (false);
   while (_mc_opt[i]) {
     args_ndx = 0;
     if (cmp == _mc_opt[i] + args_ndx) {
+      std::cout << _mc_opt[i] << ": Catched" << std::endl;
       return (true);
     }
     ++args_ndx;
@@ -247,7 +250,7 @@ _gn_opt() {
       this->_getswap();
     if (_no_more_args())
       return (0);
-#if 0
+#if 1
     if (this->_get_mc_option()) // Multi-characters options
       return (0);
 #endif
