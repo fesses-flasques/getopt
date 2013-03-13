@@ -79,7 +79,7 @@ getLastArg(char c) const {
 
   if (!c)
     return (_rem.back());
-  if ((it = this->_args.find(c)) == this->_args.end())
+  if ((it = this->_sg_args.find(c)) == this->_sg_args.end())
     return (NULL);
   return (it->second.args->back());
 }
@@ -90,7 +90,7 @@ getArgs(char c) const {
 
   if (!c)
     return (&_rem);
-  if ((it = this->_args.find(c)) == this->_args.end())
+  if ((it = this->_sg_args.find(c)) == this->_sg_args.end())
     return (NULL);
   return ((it->second.args && it->second.args->empty())
       ? NULL
@@ -103,7 +103,7 @@ _bracket_token(std::string &fmt, unsigned int i, char treat) {
   if (fmt[i] != '<')
     return (i);
   if (ISDIGIT(fmt[++i])) {// Simple number
-    _args[treat].nb = charstrait_extract<int>(fmt.c_str() + i); 
+    _sg_args[treat].nb = charstrait_extract<int>(fmt.c_str() + i); 
     while (ISDIGIT(fmt[++i]));
   }
   if (fmt[i] != '>')
@@ -132,7 +132,7 @@ _parse_hasarg(std::string &fmt, unsigned int &i, char treat) {
   unsigned int	(Getopt::* const tok[])(std::string &, unsigned int, char) = {
     &Getopt::_bracket_token
   };
-  this->_args[treat].nb = 1;
+  this->_sg_args[treat].nb = 1;
   ++i;
   if (!_fmt[i] || ISOPT(_fmt[i])) {
     return ;
@@ -153,7 +153,7 @@ _init_fmt() {
   char		treat;
   std::string	no_handle_char;
 
-  this->_args.clear();
+  this->_sg_args.clear();
   while (i < len) {
     treat = _fmt[i];
 
@@ -161,7 +161,7 @@ _init_fmt() {
     if (!ISOPT(treat)) {
       _thrower(treat, "Expected opt. Invalid token", "_fmt", _fmt.c_str(), i);
     }
-    if ((it = this->_args.find(treat)) != this->_args.end()) {
+    if ((it = this->_sg_args.find(treat)) != this->_sg_args.end()) {
       _thrower(treat, "Multiple definition of token", "_fmt", _fmt.c_str(), i);
     }
     if (no_handle_char.find(treat) != std::string::npos) {
@@ -169,9 +169,9 @@ _init_fmt() {
     } //
 
     if (HAS_ARGS(_fmt[++i])) {
-      this->_args[treat].args = NULL;
+      this->_sg_args[treat].args = NULL;
       if (_fmt[i] == MULT_HANDLE_CHAR) {
-	this->_args[treat].nb = NB_MULT_HANDLE_CHAR;
+	this->_sg_args[treat].nb = NB_MULT_HANDLE_CHAR;
 	++i;
       }
       else
@@ -300,25 +300,25 @@ int		Getopt::
 _nb_args(char c) const {
   std::map<char, args_data>::const_iterator	it;
 
-  if ((it = this->_args.find(c)) == this->_args.end())
+  if ((it = this->_sg_args.find(c)) == this->_sg_args.end())
     return (0);
   return (it->second.nb);
 }
 
 void		Getopt::
 _setarg(char c, int nb) {
-  if (!(this->_args[c].args))
-    this->_args[c].args = new std::list<char *>;
+  if (!(this->_sg_args[c].args))
+    this->_sg_args[c].args = new std::list<char *>;
   if (_optarg && nb == 1)
-    _args[c].args->push_back(_optarg);
+    _sg_args[c].args->push_back(_optarg);
   else if ((nb == NB_MULT_HANDLE_CHAR || nb > 1) && _optarg) {
     if ((nb == NB_MULT_HANDLE_CHAR) && (_optarg[0] == '-')) {
       return ;
     }
-    _args[c].args->push_back(_optarg);
+    _sg_args[c].args->push_back(_optarg);
     while (_still_args() && _argv[_ind] &&
 	((_argv[_ind][0] != '-' && nb == NB_MULT_HANDLE_CHAR) || (--nb > 0))) {
-      _args[c].args->push_back(_argv[_ind]);
+      _sg_args[c].args->push_back(_argv[_ind]);
       ++_ind;
     }
   }
@@ -377,7 +377,7 @@ Getopt(int argc, char **argv, const char *fmt, const char **l_opt, const char **
 Getopt::
 ~Getopt() {
   std::map<char, args_data>::iterator	sg_it;
-  for (sg_it = _args.begin(); sg_it != _args.end(); ++sg_it) {
+  for (sg_it = _sg_args.begin(); sg_it != _sg_args.end(); ++sg_it) {
     if (sg_it->second.args)
       delete sg_it->second.args;
   }

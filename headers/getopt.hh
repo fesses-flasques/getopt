@@ -80,7 +80,7 @@ class			Getopt
     int			nb;
     std::list<char *>	*args;
   };
-  std::map<char, args_data>	_args;
+  std::map<char, args_data>	_sg_args;
   std::list<char *>	_rem;
 
   // Parse functions
