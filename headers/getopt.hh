@@ -24,6 +24,7 @@ class			Getopt
   static const char	MULT_HANDLE_CHAR = '*';
 
   static const int      NB_MULT_HANDLE_CHAR = -1;
+  static const int      NB_NO_HANDLE_CHAR = 0;
 
   // Exceptions
   class			syntaxError : public std::exception
@@ -75,11 +76,11 @@ class			Getopt
   std::string		_ign;
   int			_low;
   int			_up;
-  struct		data {
+  struct		args_data {
     int			nb;
     std::list<char *>	*args;
   };
-  std::map<char, data>	_args;
+  std::map<char, args_data>	_args;
   std::list<char *>	_rem;
 
   // Parse functions

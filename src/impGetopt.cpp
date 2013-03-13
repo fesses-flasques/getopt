@@ -75,7 +75,7 @@ getRemain() const {
 
 char		*Getopt::
 getLastArg(char c) const {
-  std::map<char, data>::const_iterator	it;
+  std::map<char, args_data>::const_iterator	it;
 
   if (!c)
     return (_rem.back());
@@ -86,7 +86,7 @@ getLastArg(char c) const {
 
 const std::list<char *>		*Getopt::
 getArgs(char c) const {
-  std::map<char, data>::const_iterator	it;
+  std::map<char, args_data>::const_iterator	it;
 
   if (!c)
     return (&_rem);
@@ -129,7 +129,7 @@ _ptoken_caller(
 void		Getopt::
 _parse_hasarg(std::string &fmt, unsigned int &i, char treat) {
   unsigned int	ndx = 0;
-  unsigned int (Getopt::* const tok[])(std::string &, unsigned int, char) = {
+  unsigned int	(Getopt::* const tok[])(std::string &, unsigned int, char) = {
     &Getopt::_bracket_token
   };
   this->_args[treat].nb = 1;
@@ -148,21 +148,28 @@ _parse_hasarg(std::string &fmt, unsigned int &i, char treat) {
 void		Getopt::
 _init_fmt() {
   unsigned int	i = 0;
-  std::map<char, data>::const_iterator	it;
+  std::map<char, args_data>::const_iterator	it;
+  const unsigned int	len = _fmt.length();
   char		treat;
+  std::string	no_handle_char;
 
   this->_args.clear();
-  while (i < _fmt.length()) {
+  while (i < len) {
     treat = _fmt[i];
-    if (!ISOPT(treat)) { // Check if it can be an option
+
+    // Errors
+    if (!ISOPT(treat)) {
       _thrower(treat, "Expected opt. Invalid token", "_fmt", _fmt.c_str(), i);
     }
-
     if ((it = this->_args.find(treat)) != this->_args.end()) {
       _thrower(treat, "Multiple definition of token", "_fmt", _fmt.c_str(), i);
     }
+    if (no_handle_char.find(treat) != std::string::npos) {
+      _thrower(treat, "Multiple definition of mini-token", "_fmt", _fmt.c_str(), i);
+    } //
+
     if (HAS_ARGS(_fmt[++i])) {
-      this->_args[treat].args = NULL;//new std::list<char *>;
+      this->_args[treat].args = NULL;
       if (_fmt[i] == MULT_HANDLE_CHAR) {
 	this->_args[treat].nb = NB_MULT_HANDLE_CHAR;
 	++i;
@@ -170,15 +177,19 @@ _init_fmt() {
       else
 	_parse_hasarg(_fmt, i, treat);
     }
+    else
+      no_handle_char += treat;
   }
 }
 
 void		Getopt::
 _init_l_opt() {
+  std::cout << __FUNCTION__ << std::endl;
 }
 
 void		Getopt::
 _init_mc_opt() {
+  std::cout << __FUNCTION__ << std::endl;
 }
 
 void		Getopt::
@@ -213,8 +224,7 @@ _get_mc_option() {
   int		i = 0, args_ndx;
   std::string	cmp(_argv[_ind]);
 
-  
-    std::cout << "STD: " << cmp.erase(0, 1) << std::endl;
+  //std::cout << "STD: " << cmp.erase(0, 1) << std::endl;
   if (_mc_opt == NULL)
     return (false);
   while (_mc_opt[i]) {
@@ -288,7 +298,7 @@ _setopt(char c) {
 
 int		Getopt::
 _nb_args(char c) const {
-  std::map<char, data>::const_iterator	it;
+  std::map<char, args_data>::const_iterator	it;
 
   if ((it = this->_args.find(c)) == this->_args.end())
     return (0);
@@ -317,7 +327,6 @@ _setarg(char c, int nb) {
 bool		Getopt::
 _resolve_arg(char c) {
   int           nb_args;
-  std::map<char, data>::const_iterator	it;
 
   nb_args = _nb_args(c);
   if ((nb_args >= 1) || nb_args == NB_MULT_HANDLE_CHAR) {
@@ -367,12 +376,13 @@ Getopt(int argc, char **argv, const char *fmt, const char **l_opt, const char **
 
 Getopt::
 ~Getopt() {
-  std::map<char, data>::iterator	it;
-  for (it = _args.begin(); it != _args.end(); ++it) {
-    if (it->second.args)
-      delete it->second.args;
+  std::map<char, args_data>::iterator	sg_it;
+  for (sg_it = _args.begin(); sg_it != _args.end(); ++sg_it) {
+    if (sg_it->second.args)
+      delete sg_it->second.args;
   }
-
+  // Later :)
+  //std::map<char *, args_data>::iterator	mc_it;
 }
 
 Getopt::
