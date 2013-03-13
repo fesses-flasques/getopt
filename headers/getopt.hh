@@ -81,7 +81,8 @@ class			Getopt
     std::list<char *>	*args;
   };
   std::map<char, args_data>	_sg_args;
-  std::list<char *>	_rem;
+  std::map<const char *, args_data>	_mc_args;
+  std::list<char *>		_rem;
 
   // Parse functions
 

@@ -190,6 +190,14 @@ _init_l_opt() {
 void		Getopt::
 _init_mc_opt() {
   std::cout << __FUNCTION__ << std::endl;
+  unsigned int	i = 0;
+  this->_mc_args.clear();
+  while (_mc_opt[i]) {
+    std::cout << "_mc_opt[" << i << "] == {" << _mc_opt[i] << "}" << std::endl;
+    ++i;
+    _mc_args[_mc_opt[i]].nb = 0;
+  }
+  
 }
 
 void		Getopt::
