@@ -187,17 +187,25 @@ _init_l_opt() {
   std::cout << __FUNCTION__ << std::endl;
 }
 
+char		*Getopt::
+_extract_optname(const char *treat) const {
+  std::cout << "Extracting :" << treat << std::endl;
+  return (NULL);
+}
+
 void		Getopt::
 _init_mc_opt() {
   std::cout << __FUNCTION__ << std::endl;
   unsigned int	i = 0;
+  char		*extract;
+
   this->_mc_args.clear();
   while (_mc_opt[i]) {
-    std::cout << "_mc_opt[" << i << "] == {" << _mc_opt[i] << "}" << std::endl;
+    //std::cout << "_mc_opt[" << i << "] == {" << _mc_opt[i] << "}" << std::endl;
+    extract = this->_extract_optname(_mc_opt[i]);
+    (void)extract;
     ++i;
-    _mc_args[_mc_opt[i]].nb = 0;
   }
-  
 }
 
 void		Getopt::

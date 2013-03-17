@@ -81,11 +81,13 @@ class			Getopt
     std::list<char *>	*args;
   };
   std::map<char, args_data>	_sg_args;
-  std::map<const char *, args_data>	_mc_args;
+  std::map<char *, args_data>	_mc_args;
   std::list<char *>		_rem;
 
   // Parse functions
 
+  // Utilities for mc and l options.
+  char			*_extract_optname(const char *) const;
   // -> Differents token taker
   unsigned		_bracket_token(std::string &, unsigned int, char);
 
