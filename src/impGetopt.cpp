@@ -184,12 +184,21 @@ _init_fmt() {
 
 void		Getopt::
 _init_l_opt() {
+  //this->_l_args.clear();
   std::cout << __FUNCTION__ << std::endl;
 }
 
-char		*Getopt::
+const char	*Getopt::
 _extract_optname(const char *treat) const {
-  std::cout << "Extracting :" << treat << std::endl;
+  size_t	pos;
+  std::string	ext(treat);
+
+  if ((pos = ext.find_first_not_of(CHAR_STRING)) == std::string::npos)
+    return (treat);
+  else {
+    ext.erase(pos);
+    return (ext.c_str());
+  }
   return (NULL);
 }
 
@@ -197,13 +206,14 @@ void		Getopt::
 _init_mc_opt() {
   std::cout << __FUNCTION__ << std::endl;
   unsigned int	i = 0;
-  char		*extract;
+  const char	*extract;
 
   this->_mc_args.clear();
+  this->_mc_args_push_order.clear();
   while (_mc_opt[i]) {
-    //std::cout << "_mc_opt[" << i << "] == {" << _mc_opt[i] << "}" << std::endl;
+    std::cout << "_mc_opt[" << i << "] == {" << _mc_opt[i] << "}" << std::endl;
     extract = this->_extract_optname(_mc_opt[i]);
-    (void)extract;
+    std::cout << extract << std::endl;
     ++i;
   }
 }
@@ -215,8 +225,12 @@ _reinit_vars() {
   this->_swp = 0;
   this->_low = 0;
   this->_up = 0;
+
+  // Clearing existing datas
   this->_ign.clear();
   this->_rem.clear();
+
+  // Initialisation of args maps
   this->_init_fmt();
   this->_init_l_opt();
   this->_init_mc_opt();
@@ -364,6 +378,13 @@ _resolve_arg(char c) {
 
 void		Getopt::
 _build_opts() {
+  // If someone knows how to init static char * into in-class static data member initialization
+  this->CHAR_STRING =
+    "abcdefghijklmnopqrstuvwxyz"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "0123456789"
+    "_+-";
+
   this->_reinit_vars();
   while (_still_args())
     _gn_opt();

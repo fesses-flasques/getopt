@@ -26,6 +26,8 @@ class			Getopt
   static const int      NB_MULT_HANDLE_CHAR = -1;
   static const int      NB_NO_HANDLE_CHAR = 0;
 
+  const char		*CHAR_STRING;
+
   // Exceptions
   class			syntaxError : public std::exception
   {
@@ -76,18 +78,27 @@ class			Getopt
   std::string		_ign;
   int			_low;
   int			_up;
-  struct		args_data {
+  struct		args_data
+  {
     int			nb;
     std::list<char *>	*args;
   };
-  std::map<char, args_data>	_sg_args;
-  std::map<char *, args_data>	_mc_args;
-  std::list<char *>		_rem;
+  struct		args_mc_data
+  {
+    unsigned int	ndx;
+    int			nb;
+  };
+  std::map<char, args_data>		_sg_args;
+  std::map<char *, args_mc_data>	_mc_args;
+  std::list<
+    std::pair<unsigned int, char *>
+    >					_mc_args_push_order;
+  std::list<char *>			_rem;
 
   // Parse functions
 
   // Utilities for mc and l options.
-  char			*_extract_optname(const char *) const;
+  const char		*_extract_optname(const char *) const;
   // -> Differents token taker
   unsigned		_bracket_token(std::string &, unsigned int, char);
 
