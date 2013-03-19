@@ -23,6 +23,7 @@ class			Getopt
   static const char	SINGLE_HANDLE_CHAR = ':';
   static const char	MULT_HANDLE_CHAR = '*';
 
+  static const int      NB_ERR = -2;
   static const int      NB_MULT_HANDLE_CHAR = -1;
   static const int      NB_NO_HANDLE_CHAR = 0;
 
@@ -85,11 +86,11 @@ class			Getopt
   };
   struct		args_mc_data
   {
-    unsigned int	ndx;
     int			nb;
+    unsigned int	ndx;
   };
   std::map<char, args_data>		_sg_args;
-  std::map<std::string *, args_mc_data>	_mc_args;
+  std::map<std::string *, args_mc_data>	_mc_args; //Conf only
   std::list<
     std::pair<unsigned int, char *>
     >					_mc_args_push_order;
@@ -100,16 +101,15 @@ class			Getopt
   // Utilities for mc and l options.
   std::string		*_extract_optname(const char *) const;
   // -> Differents token taker
-  unsigned		_bracket_token(std::string &, unsigned int, char);
+  int			_bracket_token(const char *, unsigned int &);
 
   // -> Mechanisms for tokens
-  bool			_ptoken_caller(
-      unsigned (Getopt::*)(std::string &, unsigned int, char),
-      std::string &,
-      unsigned int &,
-      char
+  int			_ptoken_caller(
+      int		(Getopt::*)(const char *, unsigned int &),
+      const char	*,
+      unsigned int	&
       );
-  void			_parse_hasarg(std::string &, unsigned int &, char);
+  int			_parse_hasarg(const char *, unsigned int &);
 
   // -> different options types caller
   void			_init_fmt();

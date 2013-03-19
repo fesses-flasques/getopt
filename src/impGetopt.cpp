@@ -98,51 +98,64 @@ getArgs(char c) const {
       );
 }
 
-unsigned int	Getopt::
-_bracket_token(std::string &fmt, unsigned int i, char treat) {
+int	Getopt::
+_bracket_token(const char *fmt, unsigned int &i) {
+  int	ret;
+
   if (fmt[i] != '<')
-    return (i);
+    return (NB_ERR);
   if (ISDIGIT(fmt[++i])) {// Simple number
-    _sg_args[treat].nb = charstrait_extract<int>(fmt.c_str() + i); 
+    ret = charstrait_extract<int>(fmt + i); 
     while (ISDIGIT(fmt[++i]));
   }
-  if (fmt[i] != '>')
+  if (fmt[i] != '>') {
     this->_thrower(fmt[i], "Expected '>' token", "UNDEFINED", _fmt.c_str(), i);
-  return (i + 1);
+    return (NB_ERR);
+  }
+  ++i;
+  return (ret);
 }
 
-bool		Getopt::
+int	Getopt::
 _ptoken_caller(
-    unsigned int (Getopt::*ptr)(std::string &, unsigned int, char),
-    std::string &fmt,
-    unsigned int &i,
-    char treat
+    int			(Getopt::*ptr)(const char *, unsigned int &),
+    const char		*fmt,
+    unsigned int	&i
     ) {
-  unsigned int	s;
+  unsigned int		s = i;
+  int			ret;
 
-  if ((s = (this->*ptr)(fmt, i, treat)) == i)
-    return (false);
-  i = s;
-  return (true);
+  if ((ret = (this->*ptr)(fmt, i)) == NB_ERR) {
+    i = s;
+    return (NB_ERR);
+  }
+  return (ret);
 }
 
-void		Getopt::
-_parse_hasarg(std::string &fmt, unsigned int &i, char treat) {
+int	Getopt::
+_parse_hasarg(const char *fmt, unsigned int &i) {
   unsigned int	ndx = 0;
-  unsigned int	(Getopt::* const tok[])(std::string &, unsigned int, char) = {
+  int		nb;
+  int		(Getopt::* const tok[])(
+      const char *,
+      unsigned int &
+      ) = {
     &Getopt::_bracket_token
   };
-  this->_sg_args[treat].nb = 1;
-  ++i;
-  if (!_fmt[i] || ISOPT(_fmt[i])) {
-    return ;
-  }
+
+  if (_fmt[i++] == MULT_HANDLE_CHAR)
+    return (NB_MULT_HANDLE_CHAR);
+  if (!_fmt[i] || ISOPT(_fmt[i]))
+    return (1);
   while (ndx < (sizeof(tok) / sizeof(*tok))) {
-    if (_ptoken_caller(tok[ndx], fmt, i, treat) == true)
-      return ;
+    if ((nb = _ptoken_caller(tok[ndx], fmt, i)) != NB_ERR) {
+      std::cout << nb << std::endl;
+      return (nb);
+    }
     ++ndx;
   }
   _thrower(_fmt[i], "Unexpected token", "_fmt", _fmt.c_str(), i);
+  return (NB_ERR);
 }
 
 void		Getopt::
@@ -166,16 +179,12 @@ _init_fmt() {
     }
     if (no_handle_char.find(treat) != std::string::npos) {
       _thrower(treat, "Multiple definition of mini-token", "_fmt", _fmt.c_str(), i);
-    } //
+    } // !
 
     if (HAS_ARGS(_fmt[++i])) {
       this->_sg_args[treat].args = NULL;
-      if (_fmt[i] == MULT_HANDLE_CHAR) {
-	this->_sg_args[treat].nb = NB_MULT_HANDLE_CHAR;
-	++i;
-      }
-      else
-	_parse_hasarg(_fmt, i, treat);
+      this->_sg_args[treat].nb = _parse_hasarg(_fmt.c_str(), i);
+      //std::cout << "For [" << treat << "] - got [" <<  this->_sg_args[treat].nb << "]\n";
     }
     else
       no_handle_char += treat;
@@ -210,7 +219,7 @@ _init_mc_opt() {
     std::cout << "_mc_opt[" << i << "] == {" << _mc_opt[i] << "}" << std::endl;
     extract = this->_extract_optname(_mc_opt[i]);
 
-    std::cout << extract << std::endl;
+    std::cout << *extract << std::endl;
     ++i;
   }
 }
