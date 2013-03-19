@@ -188,31 +188,28 @@ _init_l_opt() {
   std::cout << __FUNCTION__ << std::endl;
 }
 
-const char	*Getopt::
+std::string	*Getopt::
 _extract_optname(const char *treat) const {
   size_t	pos;
-  std::string	ext(treat);
+  std::string	*ext = new std::string(treat);
 
-  if ((pos = ext.find_first_not_of(CHAR_STRING)) == std::string::npos)
-    return (treat);
-  else {
-    ext.erase(pos);
-    return (ext.c_str());
-  }
-  return (NULL);
+  if ((pos = ext->find_first_not_of(CHAR_STRING)) != std::string::npos)
+    ext->erase(pos);
+  return (ext);
 }
 
 void		Getopt::
 _init_mc_opt() {
   std::cout << __FUNCTION__ << std::endl;
   unsigned int	i = 0;
-  const char	*extract;
+  std::string	*extract;
 
   this->_mc_args.clear();
   this->_mc_args_push_order.clear();
   while (_mc_opt[i]) {
     std::cout << "_mc_opt[" << i << "] == {" << _mc_opt[i] << "}" << std::endl;
     extract = this->_extract_optname(_mc_opt[i]);
+
     std::cout << extract << std::endl;
     ++i;
   }

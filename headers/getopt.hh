@@ -89,7 +89,7 @@ class			Getopt
     int			nb;
   };
   std::map<char, args_data>		_sg_args;
-  std::map<char *, args_mc_data>	_mc_args;
+  std::map<std::string *, args_mc_data>	_mc_args;
   std::list<
     std::pair<unsigned int, char *>
     >					_mc_args_push_order;
@@ -98,7 +98,7 @@ class			Getopt
   // Parse functions
 
   // Utilities for mc and l options.
-  const char		*_extract_optname(const char *) const;
+  std::string		*_extract_optname(const char *) const;
   // -> Differents token taker
   unsigned		_bracket_token(std::string &, unsigned int, char);
 
