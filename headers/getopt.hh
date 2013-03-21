@@ -92,7 +92,7 @@ class			Getopt
   std::map<char, args_data>		_sg_args;
   std::map<std::string *, args_mc_data>	_mc_args; //Conf only
   std::list<
-    std::pair<unsigned int, char *>
+    std::pair<unsigned int, std::list<char *> >//HEre
     >					_mc_args_push_order;
   std::list<char *>			_rem;
 

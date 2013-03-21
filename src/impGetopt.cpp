@@ -109,7 +109,7 @@ _bracket_token(const char *fmt, unsigned int &i) {
     while (ISDIGIT(fmt[++i]));
   }
   if (fmt[i] != '>') {
-    this->_thrower(fmt[i], "Expected '>' token", "UNDEFINED", _fmt.c_str(), i);
+    this->_thrower(fmt[i], "Expected '>' token", "UNDEFINED", fmt, i);
     return (NB_ERR);
   }
   ++i;
@@ -143,18 +143,18 @@ _parse_hasarg(const char *fmt, unsigned int &i) {
     &Getopt::_bracket_token
   };
 
-  if (_fmt[i++] == MULT_HANDLE_CHAR)
+  if (fmt[i++] == MULT_HANDLE_CHAR)
     return (NB_MULT_HANDLE_CHAR);
-  if (!_fmt[i] || ISOPT(_fmt[i]))
+  if (!fmt[i])
     return (1);
   while (ndx < (sizeof(tok) / sizeof(*tok))) {
     if ((nb = _ptoken_caller(tok[ndx], fmt, i)) != NB_ERR) {
-      std::cout << nb << std::endl;
+      //std::cout << nb << std::endl;
       return (nb);
     }
     ++ndx;
   }
-  _thrower(_fmt[i], "Unexpected token", "_fmt", _fmt.c_str(), i);
+  _thrower(fmt[i], "Unexpected token", "_fmt", fmt, i);
   return (NB_ERR);
 }
 
@@ -183,7 +183,13 @@ _init_fmt() {
 
     if (HAS_ARGS(_fmt[++i])) {
       this->_sg_args[treat].args = NULL;
-      this->_sg_args[treat].nb = _parse_hasarg(_fmt.c_str(), i);
+      if (ISOPT(_fmt[i + 1])) {
+	this->_sg_args[treat].nb = _fmt[i] == MULT_HANDLE_CHAR ? NB_MULT_HANDLE_CHAR : 1;
+	++i;
+      }
+      else {
+	this->_sg_args[treat].nb = _parse_hasarg(_fmt.c_str(), i);
+      }
       //std::cout << "For [" << treat << "] - got [" <<  this->_sg_args[treat].nb << "]\n";
     }
     else
@@ -210,16 +216,17 @@ _extract_optname(const char *treat) const {
 void		Getopt::
 _init_mc_opt() {
   std::cout << __FUNCTION__ << std::endl;
-  unsigned int	i = 0;
+  unsigned int	i = 0, l;
   std::string	*extract;
 
   this->_mc_args.clear();
   this->_mc_args_push_order.clear();
   while (_mc_opt[i]) {
-    std::cout << "_mc_opt[" << i << "] == {" << _mc_opt[i] << "}" << std::endl;
+    // std::cout << "_mc_opt[" << i << "] == {" << _mc_opt[i] << "}" << std::endl;
     extract = this->_extract_optname(_mc_opt[i]);
-
-    std::cout << *extract << std::endl;
+    _mc_args[extract].ndx = i;
+    l = extract->length();
+    _mc_args[extract].nb = !(_mc_opt[i][l]) ? 0 : _parse_hasarg(_mc_opt[i], l);
     ++i;
   }
 }
@@ -240,6 +247,14 @@ _reinit_vars() {
   this->_init_fmt();
   this->_init_l_opt();
   this->_init_mc_opt();
+
+#if	0
+  std::map<std::string *, args_mc_data>::const_iterator it = _mc_args.begin();
+  while (it != _mc_args.end()) {
+    std::cout << it->first << " : " << it->second.ndx << " -> " << it->second.nb << std::endl;
+    ++it;
+  }
+#endif
 }
 
 void		Getopt::
