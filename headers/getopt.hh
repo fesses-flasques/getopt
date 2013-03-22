@@ -43,6 +43,13 @@ class			Getopt
   };
 
   void			_thrower(
+      const char *,
+      const char *,
+      const char *,
+      const char **,
+      unsigned
+      ) const throw();
+  void			_thrower(
       char,
       const char *,
       const char *,
@@ -100,6 +107,10 @@ class			Getopt
 
   // Utilities for mc and l options.
   std::string		*_extract_optname(const char *) const;
+  bool			_dash_exists(
+      std::map<std::string *, args_mc_data> &,
+      const char *
+      );
   // -> Differents token taker
   int			_bracket_token(const char *, unsigned int &);
 

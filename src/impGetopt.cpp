@@ -3,11 +3,38 @@
 
 void		Getopt::
 _thrower(
-    char token,
-    const char *err,
-    const char *which,
-    const char *fmt,
-    unsigned i
+    const char	*token,
+    const char	*err,
+    const char	*which,
+    const char	**fmt,
+    unsigned	i
+    ) const throw() {
+  std::string	error(err);
+  unsigned int	n = 0;
+
+  error += " [";
+  error += token;
+  error += "] in {";
+  error += which;
+  error += "} --\n";
+  std::cout << "ERROR THROW" << std::endl;
+  while (n < i) {
+    error += fmt[n];
+    ++n;
+    error += '\n';
+  }
+  error += "~> ";
+  error += token;
+  syntaxError *t = new syntaxError(error);
+  throw *t;
+}
+void		Getopt::
+_thrower(
+    char	token,
+    const char	*err,
+    const char	*which,
+    const char	*fmt,
+    unsigned	i
     ) const throw() {
   std::string	error(err);
 
@@ -213,6 +240,17 @@ _extract_optname(const char *treat) const {
   return (ext);
 }
 
+bool		Getopt::
+_dash_exists(std::map<std::string *, args_mc_data> &conf, const char *str) {
+  std::cout << "Verifying: "<< str << std::endl;
+  std::map<std::string *, args_mc_data>::const_iterator	it;
+  for (it = conf.begin(); it != conf.end(); ++it)
+    if (*it->first == str)
+      return (true);
+  (void)conf;
+  return (false);
+}
+
 void		Getopt::
 _init_mc_opt() {
   std::cout << __FUNCTION__ << std::endl;
@@ -224,6 +262,8 @@ _init_mc_opt() {
   while (_mc_opt[i]) {
     // std::cout << "_mc_opt[" << i << "] == {" << _mc_opt[i] << "}" << std::endl;
     extract = this->_extract_optname(_mc_opt[i]);
+    if (_dash_exists(_mc_args, extract->c_str()))
+      _thrower(_mc_opt[i], "Redefined multi-character Option", "_mc_args", _mc_opt, i);
     _mc_args[extract].ndx = i;
     l = extract->length();
     _mc_args[extract].nb = !(_mc_opt[i][l]) ? 0 : _parse_hasarg(_mc_opt[i], l);
