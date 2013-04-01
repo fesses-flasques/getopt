@@ -12,12 +12,7 @@ _thrower(
   std::string	error(err);
   unsigned int	n = 0;
 
-  error += " [";
-  error += token;
-  error += "] in {";
-  error += which;
-  error += "} --\n";
-  std::cout << "ERROR THROW" << std::endl;
+  _thrower_token(error, token, which);
   while (n < i) {
     error += fmt[n];
     ++n;
@@ -38,11 +33,7 @@ _thrower(
     ) const throw() {
   std::string	error(err);
 
-  error += " [";
-  error += token;
-  error += "] in {";
-  error += which;
-  error += "} --\n";
+  _thrower_token(error, token, which);
   error += fmt;
   error += '\n';
   error.append(i, '~');

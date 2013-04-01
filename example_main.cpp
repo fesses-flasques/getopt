@@ -9,6 +9,7 @@ print_args(char *str) {
 
 int
 main(int argc, char **argv) {
+  const char		*sg_opt = "a:bc*d:<3>ef:gh:";
   const char		*l_opt[] = {
     "color",
     NULL
@@ -16,13 +17,14 @@ main(int argc, char **argv) {
   const char		*mc_opt[] = {
     "name:<3>",
     "group:",
+    "group",
     "false",
     NULL
   };
   Getopt	*opt;
   std::string	l("lol");
   try {
-    opt = new Getopt(argc, argv, "a:bc*d:<3>ef:gh:", l_opt, mc_opt);
+    opt = new Getopt(argc, argv, sg_opt, l_opt, mc_opt);
   } catch (...) {
     std::cout << "Should appear but never does" << std::endl;
   }

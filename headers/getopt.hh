@@ -27,6 +27,20 @@ class			Getopt
   static const int      NB_MULT_HANDLE_CHAR = -1;
   static const int      NB_NO_HANDLE_CHAR = 0;
 
+  template<typename T>
+    void
+    _thrower_token(
+	std::string	&error,
+	T		token,
+	const char	*which
+	) const {
+      error += " [";
+      error += token;
+      error += "] in {";
+      error += which;
+      error += "} --\n";
+    }
+
   const char		*CHAR_STRING;
 
   // Exceptions
