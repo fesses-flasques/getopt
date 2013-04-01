@@ -23,6 +23,7 @@ class			Getopt
   static const char	SINGLE_HANDLE_CHAR = ':';
   static const char	MULT_HANDLE_CHAR = '*';
 
+  static const int      NB_TOSTR = -3;
   static const int      NB_ERR = -2;
   static const int      NB_MULT_HANDLE_CHAR = -1;
   static const int      NB_NO_HANDLE_CHAR = 0;
@@ -111,9 +112,9 @@ class			Getopt
     unsigned int	ndx;
   };
   std::map<char, args_data>		_sg_args;
-  std::map<std::string *, args_mc_data>	_mc_args; //Conf only
+  std::map<std::string *, args_mc_data>	_mc_args;
   std::list<
-    std::pair<unsigned int, std::list<char *> >//HEre
+    std::pair<unsigned int, std::list<char *> >
     >					_mc_args_push_order;
   std::list<char *>			_rem;
 
@@ -121,7 +122,7 @@ class			Getopt
 
   // Utilities for mc and l options.
   std::string		*_extract_optname(const char *) const;
-  bool			_dash_exists(
+  const args_mc_data		*_dash_exists(
       std::map<std::string *, args_mc_data> &,
       const char *
       );

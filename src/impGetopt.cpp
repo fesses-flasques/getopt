@@ -231,15 +231,13 @@ _extract_optname(const char *treat) const {
   return (ext);
 }
 
-bool		Getopt::
+const Getopt::args_mc_data	*Getopt::
 _dash_exists(std::map<std::string *, args_mc_data> &conf, const char *str) {
-  std::cout << "Verifying: "<< str << std::endl;
   std::map<std::string *, args_mc_data>::const_iterator	it;
   for (it = conf.begin(); it != conf.end(); ++it)
     if (*it->first == str)
-      return (true);
-  (void)conf;
-  return (false);
+      return (&it->second);
+  return (NULL);
 }
 
 void		Getopt::
@@ -253,7 +251,7 @@ _init_mc_opt() {
   while (_mc_opt[i]) {
     // std::cout << "_mc_opt[" << i << "] == {" << _mc_opt[i] << "}" << std::endl;
     extract = this->_extract_optname(_mc_opt[i]);
-    if (_dash_exists(_mc_args, extract->c_str()))
+    if (_dash_exists(_mc_args, extract->c_str()) != NULL)
       _thrower(_mc_opt[i], "Redefined multi-character Option", "_mc_args", _mc_opt, i);
     _mc_args[extract].ndx = i;
     l = extract->length();
@@ -303,19 +301,18 @@ _getswap() {
 
 bool	Getopt::
 _get_mc_option() {
-  int		i = 0, args_ndx;
+  int		i = 0;
   std::string	cmp(_argv[_ind]);
 
-  //std::cout << "STD: " << cmp.erase(0, 1) << std::endl;
+  cmp.erase(0, 1);
   if (_mc_opt == NULL)
     return (false);
   while (_mc_opt[i]) {
-    args_ndx = 0;
-    if (cmp == _mc_opt[i] + args_ndx) {
+    std::cout << cmp << " == " << _mc_opt[i] << std::endl;
+    if (cmp == _mc_opt[i]) {
       std::cout << _mc_opt[i] << ": Catched" << std::endl;
       return (true);
     }
-    ++args_ndx;
     ++i;
   }
   return (false);
