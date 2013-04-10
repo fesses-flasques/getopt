@@ -80,6 +80,6 @@ fclean:		clean
 
 re:		fclean all
 
-example: re
+EXAMPLE_NAME: re
 	$(CXX) $(EXAMPLE_SRC) -Iheaders/ -L. -lgetopt -o $(EXAMPLE_NAME)
 .PHONY:		all clean fclean re
