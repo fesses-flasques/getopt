@@ -1,5 +1,9 @@
 ##		PROJECT_NAME
+ifeq ($(OSTYPE),cygwin)
+NAME		=	libgetopt.dll
+else
 NAME		=	libgetopt.so
+endif
 
 ##		COLORS			#######################################
 BLUE		=	"\033[33;34m"
@@ -75,11 +79,11 @@ clean:
 
 fclean:		clean
 	$(SIL_ECHO) $(COL_RM)
-	$(SIL_RM) $(NAME)
+	$(RM) $(NAME)
 	$(SIL_ECHO) $(COL_ORG)
 
 re:		fclean all
 
-EXAMPLE_NAME: re
+$(EXAMPLE_NAME): re
 	$(CXX) $(EXAMPLE_SRC) -Iheaders/ -L. -lgetopt -o $(EXAMPLE_NAME)
 .PHONY:		all clean fclean re
