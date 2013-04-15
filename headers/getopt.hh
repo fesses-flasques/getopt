@@ -115,7 +115,7 @@ class			Getopt
   std::map<std::string *, args_mc_data>	_mc_args;
   std::list<
     std::pair<unsigned int, std::list<char *> >
-    >					_mc_args_push_order;
+    >					_push_order;
   std::list<char *>			_rem;
 
   // Parse functions
@@ -151,7 +151,7 @@ class			Getopt
   bool			_resolve_arg(char);
   void			_setarg(char, int nb = 1);
   int			_nb_args(char) const;
-  void			_setopt(char);
+  void			_get_sg_option(char);
   bool			_get_nd_option();
   bool			_get_l_option();
   bool			_get_mc_option();

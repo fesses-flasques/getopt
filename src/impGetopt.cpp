@@ -1,4 +1,3 @@
-#include	<cstdio>
 #include	"getopt.hh"
 
 void		Getopt::
@@ -235,6 +234,7 @@ _extract_optname(const char *treat) const {
 const Getopt::args_mc_data	*Getopt::
 _dash_exists(std::map<std::string *, args_mc_data> &conf, const char *str) {
   std::map<std::string *, args_mc_data>::const_iterator	it;
+
   for (it = conf.begin(); it != conf.end(); ++it)
     if (*it->first == str)
       return (&it->second);
@@ -248,7 +248,7 @@ _init_mc_opt() {
   std::string	*extract;
 
   this->_mc_args.clear();
-  this->_mc_args_push_order.clear();
+  this->_push_order.clear();
   while (_mc_opt[i]) {
     // std::cout << "_mc_opt[" << i << "] == {" << _mc_opt[i] << "}" << std::endl;
     extract = this->_extract_optname(_mc_opt[i]);
@@ -302,21 +302,17 @@ _getswap() {
 
 bool	Getopt::
 _get_mc_option() {
-  int		i = 0;
-  std::string	cmp(_argv[_ind]);
+  std::string		cmp(_argv[_ind] + 1);
+  const args_mc_data	*data;
 
-  cmp.erase(0, 1);
-  if (_mc_opt == NULL)
+  if (_mc_args.size() == 0)
     return (false);
-  while (_mc_opt[i]) {
-    std::cout << cmp << " == " << _mc_opt[i] << std::endl;
-    if (cmp == _mc_opt[i]) {
-      std::cout << _mc_opt[i] << ": Catched" << std::endl;
-      return (true);
-    }
-    ++i;
-  }
-  return (false);
+  if (!(data = _dash_exists(_mc_args, cmp.c_str())))
+    return (false);
+  std::cout << "MC got: " << cmp << " from [" << data->nb << "]" << std::endl;
+  //_push_order.push_back();
+  ++_ind;
+  return (true);
 }
 
 bool	Getopt::
@@ -332,6 +328,18 @@ _get_l_option() {
     return (true);
   }
   return (false);
+}
+
+void		Getopt::
+_get_sg_option(char c) {
+  if (ISLOWER(c)) {
+    if (!MAPOPT(_low, c))
+      _low += MAPOPT(0xFFFFFFFF, c);
+  }
+  else if (ISUPPER(c)) {
+    if (!MAPOPT(_up, c))
+      _up += MAPOPT(0xFFFFFFFF, c);
+  }
 }
 
 char		Getopt::
@@ -367,20 +375,8 @@ _gn_opt() {
       _ign += ret;
     return (0);
   }
-  _setopt(ret);
+  _get_sg_option(ret);
   return (_resolve_arg(ret));
-}
-
-void		Getopt::
-_setopt(char c) {
-  if (ISLOWER(c)) {
-    if (!MAPOPT(_low, c))
-      _low += MAPOPT(0xFFFFFFFF, c);
-  }
-  else if (ISUPPER(c)) {
-    if (!MAPOPT(_up, c))
-      _up += MAPOPT(0xFFFFFFFF, c);
-  }
 }
 
 int		Getopt::

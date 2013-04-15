@@ -15,9 +15,9 @@ main(int argc, char **argv) {
     NULL
   };
   const char		*mc_opt[] = {
-    "name:",
     "group:",
     "or",
+    "name:",
     "false",
     NULL
   };
