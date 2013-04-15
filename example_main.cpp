@@ -15,10 +15,11 @@ main(int argc, char **argv) {
     NULL
   };
   const char		*mc_opt[] = {
-    "group:",
-    "or",
-    "name:",
-    "false",
+    "-group:",
+    "-or",
+    "-name:",
+    "-false",
+    "{",
     NULL
   };
   Getopt	*opt;

@@ -301,23 +301,31 @@ _getswap() {
 }
 
 bool	Getopt::
-_get_mc_option() {
-  std::string		cmp(_argv[_ind] + 1);
-  const args_mc_data	*data;
+_resolve_mc_args(const args_mc_data *data) {
+  int	nb_args = data->nb;
 
-  if (_mc_args.size() == 0)
-    return (false);
-  if (!(data = _dash_exists(_mc_args, cmp.c_str())))
-    return (false);
-  std::cout << "MC got: " << cmp << " from [" << data->nb << "]" << std::endl;
-  //_push_order.push_back();
-  ++_ind;
+  while (nb_args) {
+    //_push_order.back().first ;
+      --nb_args;
+  }
+  std::cout << "{" << nb_args << "} == " << std::endl;
   return (true);
 }
 
 bool	Getopt::
-_get_nd_option() {
-  return (false);
+_get_mc_option() {
+  const args_mc_data	*data;
+  std::pair<const char *, std::list<char *> >	p;
+
+  if (_mc_args.size() == 0)
+    return (false);
+  if (!(data = _dash_exists(_mc_args, _argv[_ind])))
+    return (false);
+  p.first = _argv[_ind];
+  _push_order.push_back(p);
+  ++_ind;
+  this->_resolve_mc_args(data);
+  return (true);
 }
 
 bool	Getopt::
@@ -350,7 +358,7 @@ _gn_opt() {
   _optarg = NULL;
   if (!_opt) {
     while (_still_args() && _argv[_ind][0] != OPT_CHAR) {
-      if (!_get_nd_option())
+      if (!this->_get_mc_option()) // Multi-characters options
 	this->_getswap();
     }
     if (_no_more_args())
@@ -436,7 +444,7 @@ _build_opts() {
     "abcdefghijklmnopqrstuvwxyz"
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "0123456789"
-    "_+-";
+    "_+-={}[]()^%$#@!~&";
 
   this->_reinit_vars();
   while (_still_args())
