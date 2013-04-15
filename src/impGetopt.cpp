@@ -23,6 +23,7 @@ _thrower(
   syntaxError *t = new syntaxError(error);
   throw *t;
 }
+
 void		Getopt::
 _thrower(
     char	token,
@@ -319,6 +320,11 @@ _get_mc_option() {
 }
 
 bool	Getopt::
+_get_nd_option() {
+  return (false);
+}
+
+bool	Getopt::
 _get_l_option() {
   if (_argv[_ind][0] == OPT_CHAR && _argv[_ind][1] == OPT_CHAR) {
     std::cout << "long opt:\t" << _argv[_ind] << std::endl;
@@ -335,8 +341,10 @@ _gn_opt() {
 
   _optarg = NULL;
   if (!_opt) {
-    while (_still_args() && _argv[_ind][0] != OPT_CHAR)
-      this->_getswap();
+    while (_still_args() && _argv[_ind][0] != OPT_CHAR) {
+      if (!_get_nd_option())
+	this->_getswap();
+    }
     if (_no_more_args())
       return (0);
 #if 1
