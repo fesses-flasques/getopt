@@ -114,7 +114,7 @@ class			Getopt
   std::map<char, args_data>		_sg_args;
   std::map<std::string *, args_mc_data>	_mc_args;
   std::list<
-    std::pair<const char *, std::list<char *> >
+    std::pair<const char *, char **>
     >					_push_order;
   std::list<char *>			_rem;
 

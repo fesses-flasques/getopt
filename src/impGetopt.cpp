@@ -304,25 +304,26 @@ bool	Getopt::
 _resolve_mc_args(const args_mc_data *data) {
   int	nb_args = data->nb;
 
-  while (nb_args) {
-    //_push_order.back().first ;
-      --nb_args;
+  if (!nb_args) {
+    std::cout << "NO ARGS : " << _push_order.back().first << std::endl;
+    return (true);
   }
-  std::cout << "{" << nb_args << "} == " << std::endl;
+  std::cout << _push_order.back().first << std::endl;
+  std::cout << _argv[_ind] << std::endl;
   return (true);
 }
 
 bool	Getopt::
 _get_mc_option() {
   const args_mc_data	*data;
-  std::pair<const char *, std::list<char *> >	p;
 
   if (_mc_args.size() == 0)
     return (false);
   if (!(data = _dash_exists(_mc_args, _argv[_ind])))
     return (false);
-  p.first = _argv[_ind];
-  _push_order.push_back(p);
+  _push_order.push_back(
+      std::pair <const char *, char **>(_argv[_ind], NULL)
+      );
   ++_ind;
   this->_resolve_mc_args(data);
   return (true);
