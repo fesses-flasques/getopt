@@ -304,11 +304,14 @@ bool	Getopt::
 _resolve_mc_args(const args_mc_data *data) {
   int	nb_args = data->nb;
 
-    ++_ind;
   if (!nb_args) {
+    ++_ind;
     _opt = 0;
     return (true);
   }
+  while (_argv[_ind][_opt])
+    ++_opt;
+  --_opt;
   if (_resolve_sg_arg(nb_args))
     _setarg(&_push_order.back().second, nb_args);
   return (true);
@@ -318,7 +321,6 @@ bool	Getopt::
 _get_mc_option() {
   const args_mc_data	*data;
 
-  std::cout << "HFHL" << _argv[_ind] << std::endl;
   if (_mc_args.size() == 0)
     return (false);
   if (!(data = _dash_exists(_mc_args, _argv[_ind])))
@@ -344,7 +346,6 @@ bool		Getopt::
 _get_sg_option(char c) {
   int		nb = _nb_args(c);
 
-  std::cout << "YEP == " << c  << " - " << _argv[_ind] << std::endl;
   if (ISLOWER(c)) {
     if (!MAPOPT(_low, c))
       _low += MAPOPT(0xFFFFFFFF, c);
@@ -439,6 +440,7 @@ _resolve_sg_arg(int nb_args) {
     else
       _optarg = _argv[_ind] + _opt + 1;
     ++_ind;
+    _opt = 0;
     return (true);
   }
   return (false);
@@ -554,12 +556,15 @@ std::cout << (i ? "\t" : "") << "\t["
 */
   std::list<std::pair<const char *, std::list<char *> *> >::const_iterator	it_po;
   for (it_po = _push_order.begin(); it_po != _push_order.end(); ++it_po) {
-    std::cout << it_po->first << "\n{" << std::endl;
+    std::cout << it_po->first;
     std::list<char *>::iterator	it_po_l;
-    for (it_po_l = it_po->second->begin(); it_po_l != it_po->second->end(); ++it_po_l) {
-      std::cout << "  " << *it_po_l << std::endl;
+    if (it_po->second) {
+      std::cout << ":";
+      for (it_po_l = it_po->second->begin(); it_po_l != it_po->second->end(); ++it_po_l) {
+	std::cout << "[" << *it_po_l << "]";
+      }
     }
-    std::cout << "}\n" << std::endl;
+    std::cout << std::endl;
   }
   char **rem;
   if ((rem = getRemain()) && rem[0]) {
