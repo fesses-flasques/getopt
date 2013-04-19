@@ -305,11 +305,9 @@ _resolve_mc_args(const args_mc_data *data) {
   int	nb_args = data->nb;
 
   if (!nb_args) {
-    std::cout << "NO ARGS : " << _push_order.back().first << std::endl;
     return (true);
   }
-  std::cout << _push_order.back().first << std::endl;
-  std::cout << _argv[_ind] << std::endl;
+  _setarg(&_push_order.back().second, nb_args);
   return (true);
 }
 
@@ -322,7 +320,7 @@ _get_mc_option() {
   if (!(data = _dash_exists(_mc_args, _argv[_ind])))
     return (false);
   _push_order.push_back(
-      std::pair <const char *, char **>(_argv[_ind], NULL)
+      std::pair <const char *, std::list<char *> *>(_argv[_ind], NULL)
       );
   ++_ind;
   this->_resolve_mc_args(data);
@@ -339,7 +337,7 @@ _get_l_option() {
   return (false);
 }
 
-void		Getopt::
+bool		Getopt::
 _get_sg_option(char c) {
   if (ISLOWER(c)) {
     if (!MAPOPT(_low, c))
@@ -349,6 +347,7 @@ _get_sg_option(char c) {
     if (!MAPOPT(_up, c))
       _up += MAPOPT(0xFFFFFFFF, c);
   }
+  return (_resolve_sg_arg(c, _nb_args(c)));
 }
 
 char		Getopt::
@@ -384,8 +383,7 @@ _gn_opt() {
       _ign += ret;
     return (0);
   }
-  _get_sg_option(ret);
-  return (_resolve_arg(ret));
+  return (_get_sg_option(ret));
 }
 
 int		Getopt::
@@ -398,29 +396,31 @@ _nb_args(char c) const {
 }
 
 void		Getopt::
-_setarg(char c, int nb) {
-  if (!(this->_sg_args[c].args))
-    this->_sg_args[c].args = new std::list<char *>;
+_setarg(std::list<char *> **args, int nb) {
+  *args = new std::list<char *>;
+
   if (_optarg && nb == 1)
-    _sg_args[c].args->push_back(_optarg);
+    (*args)->push_back(_optarg);
   else if ((nb == NB_MULT_HANDLE_CHAR || nb > 1) && _optarg) {
     if ((nb == NB_MULT_HANDLE_CHAR) && (_optarg[0] == '-')) {
       return ;
     }
-    _sg_args[c].args->push_back(_optarg);
+    (*args)->push_back(_optarg);
     while (_still_args() && _argv[_ind] &&
 	((_argv[_ind][0] != '-' && nb == NB_MULT_HANDLE_CHAR) || (--nb > 0))) {
-      _sg_args[c].args->push_back(_argv[_ind]);
+      (*args)->push_back(_argv[_ind]);
       ++_ind;
     }
   }
 }
 
-bool		Getopt::
-_resolve_arg(char c) {
-  int           nb_args;
+void		Getopt::
+_set_sg_arg(char c, int nb) {
+  _setarg(&this->_sg_args[c].args, nb);
+}
 
-  nb_args = _nb_args(c);
+bool		Getopt::
+_resolve_sg_arg(char c, int nb_args) {
   if ((nb_args >= 1) || nb_args == NB_MULT_HANDLE_CHAR) {
     if (!_argv[_ind][_opt + 1]) {
       ++_ind;
@@ -432,7 +432,7 @@ _resolve_arg(char c) {
       _optarg = _argv[_ind] + _opt + 1;
     ++_ind;
     _opt = 0;
-    this->_setarg(c, nb_args);
+    this->_set_sg_arg(c, nb_args);
     return (true);
   }
   return (false);
@@ -546,6 +546,10 @@ std::cout << (i ? "\t" : "") << "\t["
 << *it << std::endl;
 #else
 */
+  std::list<std::pair<const char *, std::list<char *> *> >::const_iterator	it_po;
+  for (it_po = _push_order.begin(); it_po != _push_order.end(); ++it_po) {
+    std::cout << "TEST" << std::endl;
+  }
   char **rem;
   if ((rem = getRemain()) && rem[0]) {
     std::cout << "Remain\t:";

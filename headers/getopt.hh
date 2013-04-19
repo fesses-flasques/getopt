@@ -114,7 +114,7 @@ class			Getopt
   std::map<char, args_data>		_sg_args;
   std::map<std::string *, args_mc_data>	_mc_args;
   std::list<
-    std::pair<const char *, char **>
+    std::pair<const char *, std::list<char *> *>
     >					_push_order;
   std::list<char *>			_rem;
 
@@ -149,10 +149,11 @@ class			Getopt
   void			_getswap();
   char			_gn_opt();
   bool			_resolve_mc_args(const args_mc_data *);
-  bool			_resolve_arg(char);
-  void			_setarg(char, int nb = 1);
+  bool			_resolve_sg_arg(char, int);
+  void			_set_sg_arg(char, int nb = 1);
+  void			_setarg(std::list<char *> **, int);
   int			_nb_args(char) const;
-  void			_get_sg_option(char);
+  bool			_get_sg_option(char);
   bool			_get_l_option();
   bool			_get_mc_option();
 
