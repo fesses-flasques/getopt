@@ -149,7 +149,7 @@ class			Getopt
   void			_getswap();
   char			_gn_opt();
   bool			_resolve_mc_args(const args_mc_data *);
-  bool			_resolve_sg_arg(char, int);
+  bool			_resolve_sg_arg(int);
   void			_set_sg_arg(char, int nb = 1);
   void			_setarg(std::list<char *> **, int);
   int			_nb_args(char) const;

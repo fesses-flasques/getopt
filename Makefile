@@ -48,6 +48,7 @@ SRC		=	$(SRC_DIR)impGetopt.cpp
 OBJ		=	$(SRC:.cpp=.o)
 
 CXXFLAGS	+=	-Wall -Wextra
+CXXFLAGS	+=	-g3
 CXXFLAGS	+=	-ansi -pedantic
 CXXFLAGS	+=	$(foreach i, $(INCLUDE_DIRS), -I$i)
 
