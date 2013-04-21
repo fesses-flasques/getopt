@@ -524,25 +524,25 @@ dump() const {
       if (this->isSet(c))
 	std::cout << c;
     std::cout << std::endl;
-    for (c = 'a'; c <= 'z'; ++c)
-      if ((args = getArgs(c)))
-      {
-	std::cout << "\t" << c << ":";
-	int i = 0;
-	for (it = args->begin(); it != args->end(); ++it,++i)
-	  std::cout << (i ? "\t" : "") << "\t["
-	    << i << "]: "
-	    << *it << std::endl;
+    for (c = 'a'; c <= 'z'; ++c) {
+      if ((args = getArgs(c))) {
+        std::cout << c << ":";
+        for (it = args->begin(); it != args->end(); ++it)
+          std::cout << "["
+            << *it
+            << "]";
+      std::cout << std::endl;
       }
+    }
     for (c = 'A'; c <= 'Z'; ++c)
       if ((args = getArgs(c)))
       {
-	std::cout << "\t" << c << ":";
-	int i = 0;
-	for (it = args->begin(); it != args->end(); ++it,++i)
-	  std::cout << (i ? "\t" : "") << "\t["
-	    << i << "]: "
-	    << *it << std::endl;
+        std::cout << "\t" << c << ":";
+        int i = 0;
+        for (it = args->begin(); it != args->end(); ++it,++i)
+          std::cout << (i ? "\t" : "") << "\t["
+            << i << "]: "
+            << *it << std::endl;
       }
   }
   if (_ign.size())
