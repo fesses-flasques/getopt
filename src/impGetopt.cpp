@@ -488,8 +488,12 @@ Getopt::
     if (sg_it->second.args)
       delete sg_it->second.args;
   }
-  // Later :)
-  //std::map<char *, args_data>::iterator	mc_it;
+  std::list<std::pair<const char *, std::list<char *> *> >::iterator	po_it;
+  for (po_it = _push_order.begin(); po_it != _push_order.end(); ++po_it) {
+    if (po_it->second) {
+      delete po_it->second;
+    }
+  }
 }
 
 Getopt::
@@ -557,11 +561,11 @@ std::cout << (i ? "\t" : "") << "\t["
   std::list<std::pair<const char *, std::list<char *> *> >::const_iterator	it_po;
   for (it_po = _push_order.begin(); it_po != _push_order.end(); ++it_po) {
     std::cout << it_po->first;
-    std::list<char *>::iterator	it_po_l;
     if (it_po->second) {
       std::cout << ":";
+      std::list<char *>::iterator	it_po_l;
       for (it_po_l = it_po->second->begin(); it_po_l != it_po->second->end(); ++it_po_l) {
-	std::cout << "[" << *it_po_l << "]";
+        std::cout << "[" << *it_po_l << "]";
       }
     }
     std::cout << std::endl;
@@ -572,8 +576,8 @@ std::cout << (i ? "\t" : "") << "\t["
     int	i = 0;
     while (i < _argc - _ind) {
       std::cout << (i ? "\t" : "") << "\t["
-	<< i << "]: "
-	<< rem[i] << std::endl;
+        << i << "]: "
+        << rem[i] << std::endl;
       ++i;
     }
     //#endif
