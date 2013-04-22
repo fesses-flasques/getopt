@@ -86,17 +86,28 @@ isSet(char c) const {
   return (false);
 }
 
+#ifdef REMAIN_IN_LIST
+const std::list<char *>       &Getopt::
+getRemain() const {
+  return (this->_rem);
+}
+#else
 char		**Getopt::
 getRemain() const {
   return (this->_argv + _ind);
 }
+#endif
 
 char		*Getopt::
 getLastArg(char c) const {
   std::map<char, args_data>::const_iterator	it;
 
   if (!c)
+#ifdef REMAIN_IN_LIST
     return (_rem.back());
+#else
+  return (this->_argv[_argc]);
+#endif
   if ((it = this->_sg_args.find(c)) == this->_sg_args.end())
     return (NULL);
   return (it->second.args->back());
@@ -106,8 +117,10 @@ const std::list<char *>		*Getopt::
 getArgs(char c) const {
   std::map<char, args_data>::const_iterator	it;
 
+#ifdef REMAIN_IN_LIST
   if (!c)
     return (&_rem);
+#endif
   if ((it = this->_sg_args.find(c)) == this->_sg_args.end())
     return (NULL);
   return ((it->second.args && it->second.args->empty())
@@ -215,12 +228,6 @@ _init_fmt() {
   }
 }
 
-void		Getopt::
-_init_l_opt() {
-  //this->_l_args.clear();
-  std::cout << __FUNCTION__ << std::endl;
-}
-
 std::string	*Getopt::
 _extract_optname(const char *treat) const {
   size_t	pos;
@@ -229,6 +236,16 @@ _extract_optname(const char *treat) const {
   if ((pos = ext->find_first_not_of(CHAR_STRING)) != std::string::npos)
     ext->erase(pos);
   return (ext);
+}
+
+void		Getopt::
+_init_l_opt() {
+  //this->_l_args.clear();
+  unsigned int  i = 0;
+
+  while (_l_opt[i])
+    ++i;
+  std::cout << __FUNCTION__ << std::endl;
 }
 
 const Getopt::args_mc_data	*Getopt::
@@ -250,7 +267,6 @@ _init_mc_opt() {
   this->_mc_args.clear();
   this->_push_order.clear();
   while (_mc_opt[i]) {
-    // std::cout << "_mc_opt[" << i << "] == {" << _mc_opt[i] << "}" << std::endl;
     extract = this->_extract_optname(_mc_opt[i]);
     if (_dash_exists(_mc_args, extract->c_str()) != NULL)
       _thrower(_mc_opt[i], "Redefined multi-character Option", "_mc_args", _mc_opt, i);
@@ -271,7 +287,9 @@ _reinit_vars() {
 
   // Clearing existing datas
   this->_ign.clear();
+#ifdef  REMAIN_IN_LIST
   this->_rem.clear();
+#endif
 
   // Initialisation of args maps
   this->_init_fmt();
@@ -376,7 +394,7 @@ _gn_opt() {
     if (this->_get_mc_option()) // Multi-characters options
       return (0);
 #endif
-#if 0
+#if 1
     if (this->_get_l_option()) // Long options
       return (0);
 #endif
@@ -453,7 +471,7 @@ _build_opts() {
     "abcdefghijklmnopqrstuvwxyz"
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "0123456789"
-    "_+-={}[]()^%$#@!~&";
+    "_+-{}[]()^%$#@!~&";
 
   this->_reinit_vars();
   while (_still_args())

@@ -116,7 +116,12 @@ class			Getopt
   std::list<
     std::pair<const char *, std::list<char *> *>
     >					_push_order;
+  std::map<
+    std::string *, std::list<char *> *
+    >					_l_args;
+# ifdef	REMAIN_IN_LIST
   std::list<char *>			_rem;
+# endif
 
   // Parse functions
 
@@ -181,7 +186,11 @@ class			Getopt
   bool				isSet(char) const ;
   char				*getLastArg(char) const;
   const std::list<char *>	*getArgs(char) const;
-  char				**getRemain() const;
+#ifdef REMAIN_IN_LIST
+  const std::list<char *>       &getRemain() const;
+#else
+  char		                **getRemain() const;
+#endif
 };
 
 #endif
