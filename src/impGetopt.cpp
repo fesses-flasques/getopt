@@ -521,6 +521,10 @@ Getopt::
       delete po_it->second;
     }
   }
+  std::map<std::string *, args_mc_data>::iterator       _mc_it;
+  for (_mc_it = _mc_args.begin(); _mc_it != _mc_args.end(); ++_mc_it) {
+    delete _mc_it->first;
+  }
 }
 
 Getopt::
