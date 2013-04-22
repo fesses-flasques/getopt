@@ -102,12 +102,13 @@ char		*Getopt::
 getLastArg(char c) const {
   std::map<char, args_data>::const_iterator	it;
 
-  if (!c)
+  if (!c) {
 #ifdef REMAIN_IN_LIST
     return (_rem.back());
 #else
-  return (this->_argv[_argc]);
+    return (this->_argv[_argc]);
 #endif
+  }
   if ((it = this->_sg_args.find(c)) == this->_sg_args.end())
     return (NULL);
   return (it->second.args->back());
@@ -215,11 +216,11 @@ _init_fmt() {
     if (HAS_ARGS(_fmt[++i])) {
       this->_sg_args[treat].args = NULL;
       if (ISOPT(_fmt[i + 1])) {
-	this->_sg_args[treat].nb = _fmt[i] == MULT_HANDLE_CHAR ? NB_MULT_HANDLE_CHAR : 1;
-	++i;
+        this->_sg_args[treat].nb = _fmt[i] == MULT_HANDLE_CHAR ? NB_MULT_HANDLE_CHAR : 1;
+        ++i;
       }
       else {
-	this->_sg_args[treat].nb = _parse_hasarg(_fmt.c_str(), i);
+        this->_sg_args[treat].nb = _parse_hasarg(_fmt.c_str(), i);
       }
       //std::cout << "For [" << treat << "] - got [" <<  this->_sg_args[treat].nb << "]\n";
     }
@@ -240,11 +241,19 @@ _extract_optname(const char *treat) const {
 
 void		Getopt::
 _init_l_opt() {
-  //this->_l_args.clear();
   unsigned int  i = 0;
+  std::string   *extract;
 
-  while (_l_opt[i])
+  this->_l_args.clear();
+  while (_l_opt[i]) {
+    extract = this->_extract_optname(_l_opt[i]);
+    std::map<std::string *, std::list<char *> *>::const_iterator it;
+    for (it = _l_args.begin(); it != _l_args.end(); ++it)
+      if (*it->first == *extract)
+        _thrower(_l_opt[i], "Redefined Long option", "_l_args", _l_opt, i);
+    _l_args[extract] = NULL;
     ++i;
+  }
   std::cout << __FUNCTION__ << std::endl;
 }
 
@@ -386,7 +395,7 @@ _gn_opt() {
   if (!_opt) {
     while (_still_args() && _argv[_ind][0] != OPT_CHAR) {
       if (!this->_get_mc_option()) // Multi-characters options
-	this->_getswap();
+        this->_getswap();
     }
     if (_no_more_args())
       return (0);
@@ -434,7 +443,7 @@ _setarg(std::list<char *> **args, int nb) {
     }
     (*args)->push_back(_optarg);
     while (_still_args() && _argv[_ind] &&
-	((_argv[_ind][0] != '-' && nb == NB_MULT_HANDLE_CHAR) || (--nb > 0))) {
+        ((_argv[_ind][0] != '-' && nb == NB_MULT_HANDLE_CHAR) || (--nb > 0))) {
       (*args)->push_back(_argv[_ind]);
       ++_ind;
     }
@@ -452,7 +461,7 @@ _resolve_sg_arg(int nb_args) {
     if (!_argv[_ind][_opt + 1]) {
       ++_ind;
       if (_no_more_args())
-	return (false);
+        return (false);
       _optarg = _argv[_ind];
     }
     else
@@ -537,10 +546,10 @@ dump() const {
     std::cout << "Options:\t" << "-";
     for (c = 'a'; c <= 'z'; ++c)
       if (this->isSet(c))
-	std::cout << c;
+        std::cout << c;
     for (c = 'A'; c <= 'Z'; ++c)
       if (this->isSet(c))
-	std::cout << c;
+        std::cout << c;
     std::cout << std::endl;
     for (c = 'a'; c <= 'z'; ++c) {
       if ((args = getArgs(c))) {
@@ -549,7 +558,7 @@ dump() const {
           std::cout << "["
             << *it
             << "]";
-      std::cout << std::endl;
+        std::cout << std::endl;
       }
     }
     for (c = 'A'; c <= 'Z'; ++c)

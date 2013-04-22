@@ -12,6 +12,7 @@ main(int argc, char **argv) {
   const char		*sg_opt = "a:bc*d:<3>ef:gh:";
   const char		*l_opt[] = {
     "color",
+    "color",
     NULL
   };
   const char		*mc_opt[] = {
