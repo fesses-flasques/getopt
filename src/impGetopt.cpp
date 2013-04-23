@@ -243,18 +243,17 @@ void		Getopt::
 _init_l_opt() {
   unsigned int  i = 0;
   std::string   *extract;
+  std::map<std::string *, std::list<char *> *>::const_iterator it;
 
   this->_l_args.clear();
   while (_l_opt[i]) {
     extract = this->_extract_optname(_l_opt[i]);
-    std::map<std::string *, std::list<char *> *>::const_iterator it;
     for (it = _l_args.begin(); it != _l_args.end(); ++it)
       if (*it->first == *extract)
         _thrower(_l_opt[i], "Redefined Long option", "_l_args", _l_opt, i);
     _l_args[extract] = NULL;
     ++i;
   }
-  std::cout << __FUNCTION__ << std::endl;
 }
 
 const Getopt::args_mc_data	*Getopt::
@@ -269,7 +268,6 @@ _dash_exists(std::map<std::string *, args_mc_data> &conf, const char *str) {
 
 void		Getopt::
 _init_mc_opt() {
-  std::cout << __FUNCTION__ << std::endl;
   unsigned int	i = 0, l;
   std::string	*extract;
 
@@ -361,8 +359,23 @@ _get_mc_option() {
 
 bool	Getopt::
 _get_l_option() {
+  std::map<std::string *, std::list<char *> *>::iterator _l_it;
+
   if (_argv[_ind][0] == OPT_CHAR && _argv[_ind][1] == OPT_CHAR) {
-    std::cout << "long opt:\t" << _argv[_ind] << std::endl;
+    if (_argv[_ind][2]) {
+      std::string *extract = this->_extract_optname(_argv[_ind] + 2);
+      for (_l_it = _l_args.begin(); _l_it != _l_args.end(); ++_l_it) {
+        if (*_l_it->first == extract->c_str()) {
+          if (!_l_it->second) {
+            _l_it->second = new std::list<char *>;
+          }
+          _l_it->second->push_back(_argv[_ind] + _l_it->first->length() + 2);
+          ++_ind;
+          return (true);
+        }
+      }
+      std::cout << "Unknown long option: " << *extract << std::endl;
+    }
     ++_ind;
     return (true);
   }
