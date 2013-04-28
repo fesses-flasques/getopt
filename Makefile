@@ -80,7 +80,7 @@ clean:
 
 fclean:		clean
 	$(SIL_ECHO) $(COL_RM)
-	$(RM) $(NAME)
+	$(SIL_RM) $(NAME)
 	$(SIL_ECHO) $(COL_ORG)
 
 re:		fclean all
