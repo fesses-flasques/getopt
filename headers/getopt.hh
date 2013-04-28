@@ -43,6 +43,7 @@ class			Getopt
     }
 
   const char		*CHAR_STRING;
+  bool                  CMP_OPTSTRING(const char *, const char *) const;
 
   // Exceptions
   class			syntaxError : public std::exception
@@ -80,6 +81,7 @@ class			Getopt
   inline int		TABOPT(char) const;
   inline int		MAPOPT(int, char) const;
   inline bool		HAS_ARGS(char) const;
+  inline bool           STRCHR(char) const;
 
   inline bool		_still_args() const;
   inline bool		_no_more_args() const;
@@ -112,12 +114,12 @@ class			Getopt
     unsigned int	ndx;
   };
   std::map<char, args_data>		_sg_args;
-  std::map<std::string *, args_mc_data>	_mc_args;
+  std::map<const char *, args_mc_data>	_mc_args;
   std::list<
     std::pair<const char *, std::list<char *> *>
     >					_push_order;
   std::map<
-    std::string *, std::list<char *> *
+    const char *, std::list<char *> *
     >					_l_args;
 # ifdef	REMAIN_IN_LIST
   std::list<char *>			_rem;
@@ -128,7 +130,7 @@ class			Getopt
   // Utilities for mc and l options.
   std::string		*_extract_optname(const char *) const;
   const args_mc_data		*_dash_exists(
-      std::map<std::string *, args_mc_data> &,
+      std::map<const char *, args_mc_data> &,
       const char *
       );
   // -> Differents token taker
@@ -186,11 +188,11 @@ class			Getopt
   bool				isSet(char) const ;
   char				*getLastArg(char) const;
   const std::list<char *>	*getArgs(char) const;
-#ifdef REMAIN_IN_LIST
+# ifdef REMAIN_IN_LIST
   const std::list<char *>       &getRemain() const;
-#else
+# else
   char		                **getRemain() const;
-#endif
+# endif
 };
 
 #endif
