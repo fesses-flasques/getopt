@@ -555,6 +555,11 @@ Getopt::
       delete po_it->second;
     }
   }
+  std::map<const char *, std::list<char *> *>::const_iterator l_it;
+  for (l_it = _l_args.begin(); l_it != _l_args.end(); ++l_it) {
+    if (l_it->second)
+      delete l_it->second;
+  }
 }
 
 Getopt::
