@@ -390,7 +390,7 @@ _get_l_option() {
           if (!_l_it->second) {
             _l_it->second = new std::list<char *>;
           }
-          _l_it->second->push_back(_argv[_ind] + 2);
+          _l_it->second->push_back(_argv[_ind] + 2); // TODO Get args OR NULL
           ++_ind;
           return (true);
         }
@@ -636,14 +636,25 @@ std::cout << (i ? "\t" : "") << "\t["
     }
     std::cout << std::endl;
   }
+
+  std::map<const char *, std::list<char *> *>::const_iterator	it_l;
+  for (it_l = _l_args.begin(); it_l != _l_args.end(); ++it_l) {
+    std::cout << "For: --" << it_l->first << std::endl;
+    if (it_l->second) {
+      std::list<char *>::const_iterator	l;
+      for (l = it_l->second->begin(); l != it_l->second->end(); ++l)
+	std::cout << *l << std::endl;
+    }
+  }
+
   char **rem;
   if ((rem = getRemain()) && rem[0]) {
     std::cout << "Remain\t:";
     int	i = 0;
     while (i < _argc - _ind) {
       std::cout << (i ? "\t" : "") << "\t["
-        << i << "]: "
-        << rem[i] << std::endl;
+	<< i << "]: "
+	<< rem[i] << std::endl;
       ++i;
     }
     //#endif
