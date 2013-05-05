@@ -495,7 +495,8 @@ _nb_args(char c) const {
 
 void		Getopt::
 _setarg(std::list<char *> **args, int nb) {
-  *args = new std::list<char *>;
+  if (!*args)
+    *args = new std::list<char *>;
 
   if (_optarg && nb == 1)
     (*args)->push_back(_optarg);
