@@ -227,7 +227,7 @@ _parse_hasarg(const char *fmt, unsigned int &i) {
     return (1);
   while (ndx < (sizeof(tok) / sizeof(*tok))) {
     if ((nb = _ptoken_caller(tok[ndx], fmt, i)) != NB_ERR) {
-      std::cout << nb << std::endl;
+      //std::cout << nb << std::endl;
       return (nb);
     }
     ++ndx;
@@ -288,14 +288,15 @@ _extract_optname(const char *treat) const {
 void		Getopt::
 _init_l_opt() {
   unsigned int  i = 0;
-  std::map<const char *, std::list<char *> *>::const_iterator it;
+  std::map<const char *, args_data>::const_iterator it;
 
   this->_l_args.clear();
   while (_l_opt[i]) {
     for (it = _l_args.begin(); it != _l_args.end(); ++it)
       if (CMP_OPTSTRING(it->first, _l_opt[i]))
 	_thrower(_l_opt[i], "Redefined Long option", "_l_args", _l_opt, i);
-    _l_args[_l_opt[i]] = NULL;
+    _l_args[_l_opt[i]].args = NULL;
+    _l_args[_l_opt[i]].nb = 0;
     ++i;
   }
 }
@@ -400,20 +401,25 @@ _get_mc_option() {
   this->_resolve_mc_args(data);
   return (true);
 }
+#include	<cstring>
 
 bool	Getopt::
 _get_l_option() {
-  std::map<const char *, std::list<char *> *>::iterator _l_it;
+  std::map<const char *, args_data>::iterator _l_it;
 
   if (_argv[_ind][0] == OPT_CHAR && _argv[_ind][1] == OPT_CHAR) {
     if (_argv[_ind][2]) {
       for (_l_it = _l_args.begin(); _l_it != _l_args.end(); ++_l_it) {
 	if (CMP_OPTSTRING(_l_it->first, _argv[_ind] + 2)) {
-	  if (!_l_it->second) {
-	    _l_it->second = new std::list<char *>;
-	  }
-	  _l_it->second->push_back(_argv[_ind] + 2); // TODO Get args OR NULL
+	  ++_l_it->second.nb;
+	  char *len = _argv[_ind] + 2 + strlen(_l_it->first);
 	  ++_ind;
+	  if ((*len)) {
+	    if (!_l_it->second.args) {
+	      _l_it->second.args = new std::list<char *>;
+	    }
+	    _l_it->second.args->push_back(len);
+	  }
 	  return (true);
 	}
       }
@@ -577,10 +583,10 @@ Getopt::
       delete po_it->second;
     }
   }
-  std::map<const char *, std::list<char *> *>::const_iterator l_it;
+  std::map<const char *, args_data>::const_iterator l_it;
   for (l_it = _l_args.begin(); l_it != _l_args.end(); ++l_it) {
-    if (l_it->second)
-      delete l_it->second;
+    if (l_it->second.args)
+      delete l_it->second.args;
   }
 }
 
@@ -659,13 +665,16 @@ std::cout << (i ? "\t" : "") << "\t["
     std::cout << std::endl;
   }
 
-  std::map<const char *, std::list<char *> *>::const_iterator	it_l;
+  std::map<const char *, args_data>::const_iterator	it_l;
   for (it_l = _l_args.begin(); it_l != _l_args.end(); ++it_l) {
     std::cout << "For: --" << it_l->first << std::endl;
-    if (it_l->second) {
+    if (it_l->second.args) {
+      std::cout << "{" << std::endl;
       std::list<char *>::const_iterator	l;
-      for (l = it_l->second->begin(); l != it_l->second->end(); ++l)
-	std::cout << *l << std::endl;
+      for (l = it_l->second.args->begin(); l != it_l->second.args->end(); ++l) {
+	std::cout << "  " << *l << std::endl;
+      }
+      std::cout << "}" << std::endl;
     }
   }
 

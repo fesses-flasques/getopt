@@ -120,7 +120,7 @@ class			Getopt
     std::pair<const char *, std::list<char *> *>
     >					_push_order;
   std::map<
-    const char *, std::list<char *> *
+    const char *, args_data
     >					_l_args;
 # ifdef	REMAIN_IN_LIST
   std::list<char *>			_rem;
@@ -196,5 +196,6 @@ class			Getopt
   char		                **getRemain() const;
 # endif
 };
+#include	<unistd.h>
 
 #endif
