@@ -155,6 +155,27 @@ getArgs(char c) const {
 }
 
 int	Getopt::
+_to_token(const char *fmt, unsigned int &i) {
+  if (fmt[i] != 't')
+    return (NB_ERR);
+  if (fmt[++i] != '\'')
+    this->_thrower(fmt[i], "Expected '\'' token", "UNDEFINED", fmt, i);
+  const_optarg = fmt + ++i;
+  while (fmt[i] && fmt[i] != '\'')
+    ++i;
+  if (fmt[i] != '\'') {
+      this->_thrower(
+	  fmt[i],
+	  (fmt[i] ? "Unexpected token" : "Expected '\'' token"),
+	  "UNDEFINED",
+	  fmt,
+	  i
+	  );
+  }
+  return (NB_TOSTR);
+}
+
+int	Getopt::
 _bracket_token(const char *fmt, unsigned int &i) {
   int	ret;
 
@@ -196,7 +217,8 @@ _parse_hasarg(const char *fmt, unsigned int &i) {
       const char *,
       unsigned int &
       ) = {
-    &Getopt::_bracket_token
+    &Getopt::_bracket_token,
+    &Getopt::_to_token
   };
 
   if (fmt[i++] == MULT_HANDLE_CHAR)
@@ -205,7 +227,7 @@ _parse_hasarg(const char *fmt, unsigned int &i) {
     return (1);
   while (ndx < (sizeof(tok) / sizeof(*tok))) {
     if ((nb = _ptoken_caller(tok[ndx], fmt, i)) != NB_ERR) {
-      //std::cout << nb << std::endl;
+      std::cout << nb << std::endl;
       return (nb);
     }
     ++ndx;
@@ -240,11 +262,11 @@ _init_fmt() {
     if (HAS_ARGS(_fmt[++i])) {
       this->_sg_args[treat].args = NULL;
       if (ISOPT(_fmt[i + 1])) {
-        this->_sg_args[treat].nb = _fmt[i] == MULT_HANDLE_CHAR ? NB_MULT_HANDLE_CHAR : 1;
-        ++i;
+	this->_sg_args[treat].nb = _fmt[i] == MULT_HANDLE_CHAR ? NB_MULT_HANDLE_CHAR : 1;
+	++i;
       }
       else {
-        this->_sg_args[treat].nb = _parse_hasarg(_fmt.c_str(), i);
+	this->_sg_args[treat].nb = _parse_hasarg(_fmt.c_str(), i);
       }
       //std::cout << "For [" << treat << "] - got [" <<  this->_sg_args[treat].nb << "]\n";
     }
@@ -272,7 +294,7 @@ _init_l_opt() {
   while (_l_opt[i]) {
     for (it = _l_args.begin(); it != _l_args.end(); ++it)
       if (CMP_OPTSTRING(it->first, _l_opt[i]))
-        _thrower(_l_opt[i], "Redefined Long option", "_l_args", _l_opt, i);
+	_thrower(_l_opt[i], "Redefined Long option", "_l_args", _l_opt, i);
     _l_args[_l_opt[i]] = NULL;
     ++i;
   }
@@ -386,14 +408,14 @@ _get_l_option() {
   if (_argv[_ind][0] == OPT_CHAR && _argv[_ind][1] == OPT_CHAR) {
     if (_argv[_ind][2]) {
       for (_l_it = _l_args.begin(); _l_it != _l_args.end(); ++_l_it) {
-        if (CMP_OPTSTRING(_l_it->first, _argv[_ind] + 2)) {
-          if (!_l_it->second) {
-            _l_it->second = new std::list<char *>;
-          }
-          _l_it->second->push_back(_argv[_ind] + 2); // TODO Get args OR NULL
-          ++_ind;
-          return (true);
-        }
+	if (CMP_OPTSTRING(_l_it->first, _argv[_ind] + 2)) {
+	  if (!_l_it->second) {
+	    _l_it->second = new std::list<char *>;
+	  }
+	  _l_it->second->push_back(_argv[_ind] + 2); // TODO Get args OR NULL
+	  ++_ind;
+	  return (true);
+	}
       }
       std::cout << "Unknown long option: " << _argv[_ind] << std::endl;
     }
@@ -429,7 +451,7 @@ _gn_opt() {
   if (!_opt) {
     while (_still_args() && _argv[_ind][0] != OPT_CHAR) {
       if (!this->_get_mc_option()) // Multi-characters options
-        this->_getswap();
+	this->_getswap();
     }
     if (_no_more_args())
       return (0);
@@ -477,7 +499,7 @@ _setarg(std::list<char *> **args, int nb) {
     }
     (*args)->push_back(_optarg);
     while (_still_args() && _argv[_ind] &&
-        ((_argv[_ind][0] != '-' && nb == NB_MULT_HANDLE_CHAR) || (--nb > 0))) {
+	((_argv[_ind][0] != '-' && nb == NB_MULT_HANDLE_CHAR) || (--nb > 0))) {
       (*args)->push_back(_argv[_ind]);
       ++_ind;
     }
@@ -495,7 +517,7 @@ _resolve_sg_arg(int nb_args) {
     if (!_argv[_ind][_opt + 1]) {
       ++_ind;
       if (_no_more_args())
-        return (false);
+	return (false);
       _optarg = _argv[_ind];
     }
     else
@@ -585,30 +607,30 @@ dump() const {
     std::cout << "Options:\t" << "-";
     for (c = 'a'; c <= 'z'; ++c)
       if (this->isSet(c))
-        std::cout << c;
+	std::cout << c;
     for (c = 'A'; c <= 'Z'; ++c)
       if (this->isSet(c))
-        std::cout << c;
+	std::cout << c;
     std::cout << std::endl;
     for (c = 'a'; c <= 'z'; ++c) {
       if ((args = getArgs(c))) {
-        std::cout << c << ":";
-        for (it = args->begin(); it != args->end(); ++it)
-          std::cout << "["
-            << *it
-            << "]";
-        std::cout << std::endl;
+	std::cout << c << ":";
+	for (it = args->begin(); it != args->end(); ++it)
+	  std::cout << "["
+	    << *it
+	    << "]";
+	std::cout << std::endl;
       }
     }
     for (c = 'A'; c <= 'Z'; ++c)
       if ((args = getArgs(c)))
       {
-        std::cout << "\t" << c << ":";
-        int i = 0;
-        for (it = args->begin(); it != args->end(); ++it,++i)
-          std::cout << (i ? "\t" : "") << "\t["
-            << i << "]: "
-            << *it << std::endl;
+	std::cout << "\t" << c << ":";
+	int i = 0;
+	for (it = args->begin(); it != args->end(); ++it,++i)
+	  std::cout << (i ? "\t" : "") << "\t["
+	    << i << "]: "
+	    << *it << std::endl;
       }
   }
   if (_ign.size())
@@ -631,7 +653,7 @@ std::cout << (i ? "\t" : "") << "\t["
       std::cout << ":";
       std::list<char *>::iterator	it_po_l;
       for (it_po_l = it_po->second->begin(); it_po_l != it_po->second->end(); ++it_po_l) {
-        std::cout << "[" << *it_po_l << "]";
+	std::cout << "[" << *it_po_l << "]";
       }
     }
     std::cout << std::endl;

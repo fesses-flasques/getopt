@@ -98,6 +98,7 @@ class			Getopt
   unsigned int		_opt;
   int			_swp;
   char			*_optarg;
+  const char		*const_optarg;
 
   // Results
   std::string		_ign;
@@ -135,6 +136,7 @@ class			Getopt
       );
   // -> Differents token taker
   int			_bracket_token(const char *, unsigned int &);
+  int			_to_token(const char *, unsigned int &);
 
   // -> Mechanisms for tokens
   int			_ptoken_caller(

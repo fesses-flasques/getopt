@@ -19,7 +19,7 @@ main(int argc, char **argv) {
     "-or",
     "-name:",
     "-false",
-    "{",
+    "{:t'}'",
     NULL
   };
   Getopt	*opt;
