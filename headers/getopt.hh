@@ -98,7 +98,7 @@ class			Getopt
   unsigned int		_opt;
   int			_swp;
   char			*_optarg;
-  const char		*const_optarg;
+  const char		*_const_optarg;
 
   // Results
   std::string		_ign;
@@ -157,6 +157,7 @@ class			Getopt
   void			_reinit_vars();
   void			_getswap();
   char			_gn_opt();
+  bool			_resolve_tostr_arg(const args_mc_data *);
   bool			_resolve_mc_args(const args_mc_data *);
   bool			_resolve_sg_arg(int);
   void			_set_sg_arg(char, int nb = 1);

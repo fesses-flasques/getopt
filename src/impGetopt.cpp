@@ -160,7 +160,7 @@ _to_token(const char *fmt, unsigned int &i) {
     return (NB_ERR);
   if (fmt[++i] != '\'')
     this->_thrower(fmt[i], "Expected '\'' token", "UNDEFINED", fmt, i);
-  const_optarg = fmt + ++i;
+  _const_optarg = fmt + i++;
   while (fmt[i] && fmt[i] != '\'')
     ++i;
   if (fmt[i] != '\'') {
@@ -320,11 +320,14 @@ _init_mc_opt() {
   while (_mc_opt[i]) {
     if (_dash_exists(_mc_args, _mc_opt[i]) != NULL)
       _thrower(_mc_opt[i], "Redefined multi-character Option", "_mc_args", _mc_opt, i);
-    _mc_args[_mc_opt[i]].ndx = i;
+    _mc_args[_mc_opt[i]].ndx = i; // TODO To erase
     l = 0;
     while (_mc_opt[i][l] && STRCHR(_mc_opt[i][l]))
       ++l;
     _mc_args[_mc_opt[i]].nb = !(_mc_opt[i][l]) ? 0 : _parse_hasarg(_mc_opt[i], l);
+    if (_mc_args[_mc_opt[i]].nb == NB_TOSTR)
+      // TODO Have args_data ONLY design. This will resolve all
+      std::cout << "_ARGS == " << _const_optarg << std::endl;
     ++i;
   }
 }
@@ -371,6 +374,19 @@ _getswap() {
 }
 
 bool	Getopt::
+_resolve_tostr_arg(const args_mc_data *data) {
+  // TODO We don't fucking need ndx in there, let's just put up args_data ONLY.
+  (void)data;
+  std::cout << "BEGIN +==" << std::endl;
+  std::cout << _mc_args[_push_order.back().first].ndx<< std::endl;
+  std::cout << _push_order.back().first << std::endl;
+  std::cout << "END +==" << std::endl;
+  ++_ind;
+  _opt = 0;
+  return (true);
+}
+
+bool	Getopt::
 _resolve_mc_args(const args_mc_data *data) {
   int	nb_args = data->nb;
 
@@ -378,6 +394,9 @@ _resolve_mc_args(const args_mc_data *data) {
     ++_ind;
     _opt = 0;
     return (true);
+  }
+  if (nb_args == NB_TOSTR) {
+    return (_resolve_tostr_arg(data));
   }
   while (_argv[_ind][_opt])
     ++_opt;
