@@ -109,13 +109,15 @@ class			Getopt
     int			nb;
     std::list<char *>	*args;
   };
-  struct		args_mc_data
+#if 0
+  struct		args_data
   {
     int			nb;
     unsigned int	ndx;
   };
+#endif
   std::map<char, args_data>		_sg_args;
-  std::map<const char *, args_mc_data>	_mc_args;
+  std::map<const char *, args_data>	_mc_args;
   std::list<
     std::pair<const char *, std::list<char *> *>
     >					_push_order;
@@ -130,8 +132,8 @@ class			Getopt
 
   // Utilities for mc and l options.
   std::string		*_extract_optname(const char *) const;
-  const args_mc_data		*_dash_exists(
-      std::map<const char *, args_mc_data> &,
+  const args_data		*_dash_exists(
+      std::map<const char *, args_data> &,
       const char *
       );
   // -> Differents token taker
@@ -157,8 +159,8 @@ class			Getopt
   void			_reinit_vars();
   void			_getswap();
   char			_gn_opt();
-  bool			_resolve_tostr_arg(const args_mc_data *);
-  bool			_resolve_mc_args(const args_mc_data *);
+  bool			_resolve_tostr_arg(const args_data *);
+  bool			_resolve_mc_args(const args_data *);
   bool			_resolve_sg_arg(int);
   void			_set_sg_arg(char, int nb = 1);
   void			_setarg(std::list<char *> **, int);

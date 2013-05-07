@@ -301,9 +301,9 @@ _init_l_opt() {
   }
 }
 
-const Getopt::args_mc_data	*Getopt::
-_dash_exists(std::map<const char *, args_mc_data> &conf, const char *str) {
-  std::map<const char *, args_mc_data>::const_iterator	it;
+const Getopt::args_data	*Getopt::
+_dash_exists(std::map<const char *, args_data> &conf, const char *str) {
+  std::map<const char *, args_data>::const_iterator	it;
 
   for (it = conf.begin(); it != conf.end(); ++it)
     if (CMP_OPTSTRING(it->first, str))
@@ -320,14 +320,19 @@ _init_mc_opt() {
   while (_mc_opt[i]) {
     if (_dash_exists(_mc_args, _mc_opt[i]) != NULL)
       _thrower(_mc_opt[i], "Redefined multi-character Option", "_mc_args", _mc_opt, i);
-    _mc_args[_mc_opt[i]].ndx = i; // TODO To erase
+    //_mc_args[_mc_opt[i]].ndx = i;
     l = 0;
     while (_mc_opt[i][l] && STRCHR(_mc_opt[i][l]))
       ++l;
     _mc_args[_mc_opt[i]].nb = !(_mc_opt[i][l]) ? 0 : _parse_hasarg(_mc_opt[i], l);
-    if (_mc_args[_mc_opt[i]].nb == NB_TOSTR)
-      // TODO Have args_data ONLY design. This will resolve all
+    if (_mc_args[_mc_opt[i]].nb == NB_TOSTR) {
       std::cout << "_ARGS == " << _const_optarg << std::endl;
+      if (!(_mc_args[_mc_opt[i]].args)) {
+	_mc_args[_mc_opt[i]].args = new std::list<char *>;
+      }
+      //_mc_args[_mc_opt[i]].args->push_back(_const_optarg);
+      // TODO Splitting for different strings.
+    }
     ++i;
   }
 }
@@ -352,7 +357,7 @@ _reinit_vars() {
   this->_init_mc_opt();
 
 #if	0
-  std::map<std::string *, args_mc_data>::const_iterator it = _mc_args.begin();
+  std::map<std::string *, args_data>::const_iterator it = _mc_args.begin();
   while (it != _mc_args.end()) {
     std::cout << it->first << " : " << it->second.ndx << " -> " << it->second.nb << std::endl;
     ++it;
@@ -374,11 +379,10 @@ _getswap() {
 }
 
 bool	Getopt::
-_resolve_tostr_arg(const args_mc_data *data) {
-  // TODO We don't fucking need ndx in there, let's just put up args_data ONLY.
+_resolve_tostr_arg(const args_data *data) {
   (void)data;
   std::cout << "BEGIN +==" << std::endl;
-  std::cout << _mc_args[_push_order.back().first].ndx<< std::endl;
+  std::cout << _mc_args[_push_order.back().first].args << std::endl;
   std::cout << _push_order.back().first << std::endl;
   std::cout << "END +==" << std::endl;
   ++_ind;
@@ -387,7 +391,7 @@ _resolve_tostr_arg(const args_mc_data *data) {
 }
 
 bool	Getopt::
-_resolve_mc_args(const args_mc_data *data) {
+_resolve_mc_args(const args_data *data) {
   int	nb_args = data->nb;
 
   if (!nb_args) {
@@ -408,7 +412,7 @@ _resolve_mc_args(const args_mc_data *data) {
 
 bool	Getopt::
 _get_mc_option() {
-  const args_mc_data	*data;
+  const args_data	*data;
 
   if (_mc_args.size() == 0)
     return (false);
