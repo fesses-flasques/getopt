@@ -156,17 +156,22 @@ getArgs(char c) const {
 
 int	Getopt::
 _to_token(const char *fmt, unsigned int &i) {
+  bool		res;
+
   if (fmt[i] != 't')
     return (NB_ERR);
   if (fmt[++i] != '\'')
     this->_thrower(fmt[i], "Expected '\'' token", "UNDEFINED", fmt, i);
   _const_optarg = fmt + i++;
-  while (fmt[i] && fmt[i] != '\'')
+  std::cout << fmt + i << std::endl;
+  while (fmt[i]) {
+    // TODO Check format
     ++i;
-  if (fmt[i] != '\'') {
+  }
+  if ((res = fmt[i - 1] != '\'')) {
       this->_thrower(
 	  fmt[i],
-	  (fmt[i] ? "Unexpected token" : "Expected '\'' token"),
+	  (res ? "Unexpected token" : "Expected '\'' token"),
 	  "UNDEFINED",
 	  fmt,
 	  i
@@ -312,6 +317,17 @@ _dash_exists(std::map<const char *, args_data> &conf, const char *str) {
 }
 
 void		Getopt::
+_pusher_split(std::list<char *> *l) {
+  (void)l;
+  return ;
+#if 0
+  char *test = 0 + (char *)_const_optarg;
+  unsigned int	i = 0;
+  std::cout << test << std::endl;
+#endif
+}
+
+void		Getopt::
 _init_mc_opt() {
   unsigned int	i = 0, l;
 
@@ -326,12 +342,12 @@ _init_mc_opt() {
       ++l;
     _mc_args[_mc_opt[i]].nb = !(_mc_opt[i][l]) ? 0 : _parse_hasarg(_mc_opt[i], l);
     if (_mc_args[_mc_opt[i]].nb == NB_TOSTR) {
-      std::cout << "_ARGS == " << _const_optarg << std::endl;
       if (!(_mc_args[_mc_opt[i]].args)) {
 	_mc_args[_mc_opt[i]].args = new std::list<char *>;
       }
       //_mc_args[_mc_opt[i]].args->push_back(_const_optarg);
-      // TODO Splitting for different strings.
+      _pusher_split(_mc_args[_mc_opt[i]].args);
+      // TODO Still has to be done.
     }
     ++i;
   }
@@ -424,7 +440,6 @@ _get_mc_option() {
   this->_resolve_mc_args(data);
   return (true);
 }
-#include	<cstring>
 
 bool	Getopt::
 _get_l_option() {

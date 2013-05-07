@@ -19,11 +19,11 @@ main(int argc, char **argv) {
     "-or",
     "-name:",
     "-false",
-    "{:t'}'",
+    "{:t'}'sdflkj",
     NULL
   };
   Getopt	*opt;
-  std::string	l("lol");
+
   try {
     opt = new Getopt(argc, argv, sg_opt, l_opt, mc_opt);
   } catch (...) {

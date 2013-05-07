@@ -6,6 +6,7 @@
 # include	<list>
 # include	<exception>
 # include	<sstream>
+# include	<cstring>
 
 # undef		REMAIN_IN_LIST
 
@@ -23,10 +24,10 @@ class			Getopt
   static const char	SINGLE_HANDLE_CHAR = ':';
   static const char	MULT_HANDLE_CHAR = '*';
 
-  static const int      NB_TOSTR = -3;
-  static const int      NB_ERR = -2;
-  static const int      NB_MULT_HANDLE_CHAR = -1;
-  static const int      NB_NO_HANDLE_CHAR = 0;
+  static const int	NB_TOSTR = -3;
+  static const int	NB_ERR = -2;
+  static const int	NB_MULT_HANDLE_CHAR = -1;
+  static const int	NB_NO_HANDLE_CHAR = 0;
 
   template<typename T>
     void
@@ -131,6 +132,7 @@ class			Getopt
   // Parse functions
 
   // Utilities for mc and l options.
+  void			_pusher_split(std::list<char *> *);
   std::string		*_extract_optname(const char *) const;
   const args_data		*_dash_exists(
       std::map<const char *, args_data> &,
