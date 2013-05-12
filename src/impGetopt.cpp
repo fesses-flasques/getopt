@@ -156,27 +156,41 @@ getArgs(char c) const {
 
 int	Getopt::
 _to_token(const char *fmt, unsigned int &i) {
-  bool		res;
+  bool		res = false;
 
   if (fmt[i] != 't')
     return (NB_ERR);
   if (fmt[++i] != '\'')
     this->_thrower(fmt[i], "Expected '\'' token", "UNDEFINED", fmt, i);
-  _const_optarg = fmt + i++;
-  std::cout << fmt + i << std::endl;
-  while (fmt[i]) {
-    // TODO Check format
+  _const_optarg = fmt + i;
+
+  // Check format: '\'' [char]+ [ '|' [char]+ ]* '\''
+  if (fmt[i] != '\'')
+    goto err;
+  ++i;
+  while (fmt[i] && fmt[i] != '\'') {
+    if (!STRCHR(fmt[i]) && fmt[i] != '|') {
+      goto err;
+    }
     ++i;
   }
-  if ((res = fmt[i - 1] != '\'')) {
-      this->_thrower(
-	  fmt[i],
-	  (res ? "Unexpected token" : "Expected '\'' token"),
-	  "UNDEFINED",
-	  fmt,
-	  i
-	  );
+  if (!fmt[i]) {
+    goto err;
   }
+  if (fmt[++i]) {
+    res = true;
+    goto err;
+  }
+  goto no_err;
+err:
+  this->_thrower(
+      (res ? fmt[i] : '\''),
+      (res ? "Unexpected token" : "Expected token"),
+      "UNDEFINED",
+      fmt,
+      i
+      );
+no_err:
   return (NB_TOSTR);
 }
 
