@@ -332,13 +332,19 @@ _dash_exists(std::map<const char *, args_data> &conf, const char *str) {
 
 void		Getopt::
 _pusher_split(std::list<char *> *l) {
-  (void)l;
-  return ;
-#if 0
   char *test = 0 + (char *)_const_optarg;
   unsigned int	i = 0;
-  std::cout << test << std::endl;
-#endif
+
+
+  ++i;
+  while (test[i]) {
+    l->push_back(test + i);
+    std::cout << "Yep == "  << test + i << std::endl;
+    while (test[i] && test[i] != '|') {
+      ++i;
+    }
+    i += (test[i] != 0);
+  }
 }
 
 void		Getopt::
@@ -359,9 +365,7 @@ _init_mc_opt() {
       if (!(_mc_args[_mc_opt[i]].args)) {
 	_mc_args[_mc_opt[i]].args = new std::list<char *>;
       }
-      //_mc_args[_mc_opt[i]].args->push_back(_const_optarg);
       _pusher_split(_mc_args[_mc_opt[i]].args);
-      // TODO Still has to be done.
     }
     ++i;
   }
@@ -410,10 +414,8 @@ _getswap() {
 
 bool	Getopt::
 _resolve_tostr_arg(const args_data *data) {
-  (void)data;
   std::cout << "BEGIN +==" << std::endl;
-  std::cout << _mc_args[_push_order.back().first].args << std::endl;
-  std::cout << _push_order.back().first << std::endl;
+  std::cout << data->args->back() << std::endl;
   std::cout << "END +==" << std::endl;
   ++_ind;
   _opt = 0;
