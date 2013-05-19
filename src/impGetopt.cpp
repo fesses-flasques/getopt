@@ -331,23 +331,6 @@ _dash_exists(std::map<const char *, args_data> &conf, const char *str) {
 }
 
 void		Getopt::
-_pusher_split(std::list<char *> *l) {
-  char *test = 0 + (char *)_const_optarg;
-  unsigned int	i = 0;
-
-
-  ++i;
-  while (test[i]) {
-    l->push_back(test + i);
-    std::cout << "Yep == "  << test + i << std::endl;
-    while (test[i] && test[i] != '|') {
-      ++i;
-    }
-    i += (test[i] != 0);
-  }
-}
-
-void		Getopt::
 _init_mc_opt() {
   unsigned int	i = 0, l;
 
@@ -365,7 +348,7 @@ _init_mc_opt() {
       if (!(_mc_args[_mc_opt[i]].args)) {
 	_mc_args[_mc_opt[i]].args = new std::list<char *>;
       }
-      _pusher_split(_mc_args[_mc_opt[i]].args);
+      _mc_args[_mc_opt[i]].args->push_back(const_cast<char *>(_const_optarg));
     }
     ++i;
   }
@@ -414,9 +397,21 @@ _getswap() {
 
 bool	Getopt::
 _resolve_tostr_arg(const args_data *data) {
+  char		*test;
+  unsigned int	i = 0;
+
   std::cout << "BEGIN +==" << std::endl;
-  std::cout << data->args->back() << std::endl;
+  std::cout << (test = data->args->back()) << std::endl;
   std::cout << "END +==" << std::endl;
+  ++i;
+  std::cout << "Nope == " << _argv[_ind] << std::endl;
+  while (test[i]) {
+    std::cout << "Yep == "  << test + i << std::endl;
+    while (test[i] && test[i] != '|') {
+      ++i;
+    }
+    i += (test[i] != 0);
+  }
   ++_ind;
   _opt = 0;
   return (true);
