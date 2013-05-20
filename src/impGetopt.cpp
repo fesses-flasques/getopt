@@ -398,14 +398,15 @@ _getswap() {
 bool	Getopt::
 _resolve_tostr_arg(const args_data *data) {
   char		*test;
-  unsigned int	i = 0;
+  unsigned int	i = 1;
 
-  std::cout << "BEGIN +==" << std::endl;
-  std::cout << (test = data->args->back()) << std::endl;
-  std::cout << "END +==" << std::endl;
-  ++i;
-  std::cout << "Nope == " << _argv[_ind] << std::endl;
+  test = data->args->back();
+  if (_resolve_arg_match(test + i));
+  // TODO HERE
+
   while (test[i]) {
+
+
     std::cout << "Yep == "  << test + i << std::endl;
     while (test[i] && test[i] != '|') {
       ++i;
