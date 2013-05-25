@@ -349,6 +349,7 @@ _init_mc_opt() {
 	_mc_args[_mc_opt[i]].args = new std::list<char *>;
       }
       _mc_args[_mc_opt[i]].args->push_back(const_cast<char *>(_const_optarg));
+      // Yeah yeah it's bad blablabla.
     }
     ++i;
   }
@@ -356,7 +357,7 @@ _init_mc_opt() {
 
 void		Getopt::
 _reinit_vars() {
-  this->_ind = 1;
+  this->_ind = 1; // avoid argv[0].
   this->_opt = 0;
   this->_swp = 0;
   this->_low = 0;
@@ -395,26 +396,46 @@ _getswap() {
   ++this->_swp;
 }
 
+bool			Getopt::
+_tostr_match(char *cmp) {
+  unsigned int	i = 0;
+
+  for (;;) {
+    if ((cmp[i] == '\'' || cmp[i] == '|') && !_argv[_ind][i]) {
+      return (true);
+    }
+    if (!_argv[_ind][i] || cmp[i] == '\'' || cmp[i] == '|') {
+      return (false);
+    }
+    ++i;
+  }
+  return (false);
+}
+
 bool	Getopt::
 _resolve_tostr_arg(const args_data *data) {
   char		*test;
-  unsigned int	i = 0;
+  unsigned int	i;
+  std::list<char *>	*ref;
 
-  std::cout << "BEGIN +==" << std::endl;
-  std::cout << (test = data->args->back()) << std::endl;
-  std::cout << "END +==" << std::endl;
-  ++i;
-  std::cout << "Nope == " << _argv[_ind] << std::endl;
-  while (test[i]) {
-    std::cout << "Yep == "  << test + i << std::endl;
-    while (test[i] && test[i] != '|') {
-      ++i;
-    }
-    i += (test[i] != 0);
-  }
+  test = data->args->back();
+  ref = _push_order.back().second = new std::list<char *>;
   ++_ind;
+  while (_still_args()) {
+    i = 1;
+    while (test[i]) {
+      if (_tostr_match(test + i) == true) {
+	ref->push_back(_argv[_ind]);
+	return (true);
+      }
+      while (test[i] && test[i] != '|') ++i;
+      i += (test[i] != 0);
+    }
+    ref->push_back(_argv[_ind]);
+    ++_ind;
+  }
   _opt = 0;
-  return (true);
+  return (false);
 }
 
 bool	Getopt::
@@ -448,8 +469,8 @@ _get_mc_option() {
   _push_order.push_back(
       std::pair <const char *, std::list<char *> *>(_argv[_ind], NULL)
       );
-  this->_resolve_mc_args(data);
-  return (true);
+  return (this->_resolve_mc_args(data));
+  //return (true);
 }
 
 bool	Getopt::

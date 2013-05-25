@@ -132,8 +132,9 @@ class			Getopt
   // Parse functions
 
   // Utilities for mc and l options.
+  bool			_tostr_match(char *);
   std::string		*_extract_optname(const char *) const;
-  const args_data		*_dash_exists(
+  const args_data	*_dash_exists(
       std::map<const char *, args_data> &,
       const char *
       );
