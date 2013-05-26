@@ -439,6 +439,10 @@ _resolve_tostr_arg(const args_data *data) {
   ++_ind;
   while (_still_args()) {
     i = 1;
+    if (data->nb != NB_NRSTR) {
+      if (_get_mc_option())
+	ref->push_back(NULL);
+    }
     while (test[i]) {
       if (_tostr_match(test + i) == true) {
 	ref->push_back(_argv[_ind++]);
@@ -746,7 +750,10 @@ std::cout << (i ? "\t" : "") << "\t["
       std::cout << ":";
       std::list<char *>::iterator	it_po_l;
       for (it_po_l = it_po->second->begin(); it_po_l != it_po->second->end(); ++it_po_l) {
-	std::cout << "[" << *it_po_l << "]";
+	/*if (!(*it_po_l))
+	  std::cout << "_NEXT_" << std::endl;
+	else*/
+	  std::cout << "[" << (*it_po_l ? *it_po_l : "NULL") << "]";
       }
     }
     std::cout << std::endl;
