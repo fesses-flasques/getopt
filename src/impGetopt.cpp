@@ -155,16 +155,18 @@ getArgs(char c) const {
 }
 
 int	Getopt::
-_to_token(const char *fmt, unsigned int &i) {
+_tr_token_compl(const char *fmt, unsigned int &i, int tok) {
   bool		res = false;
 
-  if (fmt[i] != 't')
+  if (fmt[i] != (tok == NB_TOSTR ? 't' : 'r'))
     return (NB_ERR);
   if (fmt[++i] != '\'')
     this->_thrower(fmt[i], "Expected '\'' token", "UNDEFINED", fmt, i);
   _const_optarg = fmt + i;
 
-  // Check format: '\'' [char]+ [ '|' [char]+ ]* '\''
+  /*
+   * Check format: '\'' [char]+ [ '|' [char]+ ]* '\''
+   */
   if (fmt[i] != '\'')
     goto err;
   ++i;
@@ -191,7 +193,17 @@ err:
       i
       );
 no_err:
-  return (NB_TOSTR);
+  return (tok);
+}
+
+int	Getopt::
+_to_token(const char *fmt, unsigned int &i) {
+  return (_tr_token_compl(fmt, i, NB_TOSTR));
+}
+
+int	Getopt::
+_rec_to_token(const char *fmt, unsigned int &i) {
+  return (_tr_token_compl(fmt, i, NB_NRSTR));
 }
 
 int	Getopt::
@@ -237,7 +249,8 @@ _parse_hasarg(const char *fmt, unsigned int &i) {
       unsigned int &
       ) = {
     &Getopt::_bracket_token,
-    &Getopt::_to_token
+    &Getopt::_to_token,
+    &Getopt::_rec_to_token
   };
 
   if (fmt[i++] == MULT_HANDLE_CHAR)
@@ -344,7 +357,7 @@ _init_mc_opt() {
     while (_mc_opt[i][l] && STRCHR(_mc_opt[i][l]))
       ++l;
     _mc_args[_mc_opt[i]].nb = !(_mc_opt[i][l]) ? 0 : _parse_hasarg(_mc_opt[i], l);
-    if (_mc_args[_mc_opt[i]].nb == NB_TOSTR) {
+    if (_mc_args[_mc_opt[i]].nb == NB_TOSTR || _mc_args[_mc_opt[i]].nb == NB_NRSTR) {
       if (!(_mc_args[_mc_opt[i]].args)) {
 	_mc_args[_mc_opt[i]].args = new std::list<char *>;
       }
@@ -450,7 +463,7 @@ _resolve_mc_args(const args_data *data) {
     _opt = 0;
     return (true);
   }
-  if (nb_args == NB_TOSTR) {
+  if (nb_args == NB_TOSTR || nb_args == NB_NRSTR) {
     return (_resolve_tostr_arg(data));
   }
   while (_argv[_ind][_opt])
@@ -750,6 +763,8 @@ std::cout << (i ? "\t" : "") << "\t["
       }
       std::cout << "}" << std::endl;
     }
+    else
+      std::cout << "  NONE" << std::endl;
   }
 
   char **rem;

@@ -24,6 +24,7 @@ class			Getopt
   static const char	SINGLE_HANDLE_CHAR = ':';
   static const char	MULT_HANDLE_CHAR = '*';
 
+  static const int	NB_NRSTR = -4;
   static const int	NB_TOSTR = -3;
   static const int	NB_ERR = -2;
   static const int	NB_MULT_HANDLE_CHAR = -1;
@@ -141,6 +142,9 @@ class			Getopt
   // -> Differents token taker
   int			_bracket_token(const char *, unsigned int &);
   int			_to_token(const char *, unsigned int &);
+  int			_rec_to_token(const char *, unsigned int &);
+
+  int			_tr_token_compl(const char *, unsigned int &, int);
 
   // -> Mechanisms for tokens
   int			_ptoken_caller(

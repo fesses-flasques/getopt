@@ -19,7 +19,8 @@ main(int argc, char **argv) {
     "-or",
     "-name:",
     "-false",
-    "{:t'}|f'",
+    "[:r']'",
+    "{:t'}|break'",
     NULL
   };
   Getopt	*opt;
