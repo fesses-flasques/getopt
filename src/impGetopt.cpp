@@ -404,6 +404,9 @@ _tostr_match(char *cmp) {
     if ((cmp[i] == '\'' || cmp[i] == '|') && !_argv[_ind][i]) {
       return (true);
     }
+    if (cmp[i] != _argv[_ind][i]) {
+      return (false);
+    }
     if (!_argv[_ind][i] || cmp[i] == '\'' || cmp[i] == '|') {
       return (false);
     }
@@ -425,7 +428,7 @@ _resolve_tostr_arg(const args_data *data) {
     i = 1;
     while (test[i]) {
       if (_tostr_match(test + i) == true) {
-	ref->push_back(_argv[_ind]);
+	ref->push_back(_argv[_ind++]);
 	return (true);
       }
       while (test[i] && test[i] != '|') ++i;
